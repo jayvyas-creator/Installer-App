@@ -1,0 +1,149 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-instant) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+  user-select: none;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.spinner {
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.label {
+  display: inline-block;
+}
+
+/* ---- sizes ---- */
+.md {
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  font-size: var(--font-size-body);
+}
+
+.lg {
+  min-height: 3.25rem;
+  padding: 0 var(--space-6);
+  font-size: var(--font-size-body-lg);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* ---- variants ---- */
+.primary {
+  background: var(--color-brand-orange-500);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-button);
+}
+
+.primary:active:not(:disabled) {
+  box-shadow: var(--shadow-sm);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-brand-orange-600);
+}
+
+.primary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.primary:disabled {
+  background: var(--color-neutral-200);
+  color: var(--text-disabled);
+  box-shadow: none;
+}
+
+.secondary {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-default);
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-sunken);
+}
+
+.secondary:focus-visible {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.secondary:disabled {
+  color: var(--text-disabled);
+  border-color: var(--border-subtle);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.ghost:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.ghost:disabled {
+  color: var(--text-disabled);
+}
+
+.danger {
+  background: var(--color-error-600);
+  color: var(--text-on-brand);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--color-error-700);
+}
+
+.danger:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring-error);
+}
+
+.danger:disabled {
+  background: var(--color-neutral-200);
+  color: var(--text-disabled);
+}
+
+.loading .label {
+  opacity: 0.85;
+}

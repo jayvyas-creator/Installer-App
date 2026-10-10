@@ -1,0 +1,101 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.label {
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.required {
+  color: var(--text-error);
+  margin-left: var(--space-1);
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 3.25rem;
+  padding: 0 var(--space-4);
+  background: var(--surface-card);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.inputWrapper:has(input:focus),
+.inputWrapper:has(select:focus) {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.inputWrapper[data-error="true"] {
+  border-color: var(--border-error);
+}
+
+.inputWrapper[data-error="true"]:has(input:focus),
+.inputWrapper[data-error="true"]:has(select:focus) {
+  box-shadow: var(--shadow-focus-ring-error);
+}
+
+.inputWrapper[data-disabled="true"] {
+  background: var(--surface-sunken);
+  border-color: var(--border-subtle);
+}
+
+.leadingIcon {
+  display: inline-flex;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: var(--font-size-body-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.input::placeholder {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.input:disabled {
+  color: var(--text-disabled);
+  -webkit-text-fill-color: var(--text-disabled);
+}
+
+.input:focus {
+  outline: none;
+}
+
+.helper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  font-size: var(--font-size-caption);
+  color: var(--text-secondary);
+}
+
+.helper[data-error="true"] {
+  color: var(--text-error);
+  font-weight: 600;
+}
+
+.helperIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}

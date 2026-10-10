@@ -1,0 +1,67 @@
+.svg {
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.track {
+  fill: none;
+  stroke: var(--color-neutral-200);
+}
+
+.indicator {
+  fill: none;
+  stroke-linecap: round;
+  stroke: var(--color-brand-orange-500);
+  transition: stroke-dashoffset var(--duration-moderate) var(--ease-standard);
+}
+
+.indicator[data-tone="success"] {
+  stroke: var(--color-success-600);
+}
+
+.indicator[data-tone="error"] {
+  stroke: var(--color-error-600);
+}
+
+.indeterminateGroup {
+  transform-origin: 50% 50%;
+  animation: rotate 1.4s linear infinite;
+}
+
+.indeterminateIndicator {
+  fill: none;
+  stroke-linecap: round;
+  stroke: var(--color-brand-orange-500);
+  animation: dash 1.4s ease-in-out infinite;
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -20;
+  }
+  100% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -120;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indeterminateGroup {
+    animation: none;
+  }
+  .indeterminateIndicator {
+    animation: none;
+    stroke-dasharray: 70, 200;
+  }
+}

@@ -1,0 +1,35 @@
+.selectWrapper {
+  position: relative;
+}
+
+.select {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-body-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+  padding-right: var(--space-6);
+}
+
+.select:disabled {
+  color: var(--text-disabled);
+}
+
+.select:focus {
+  outline: none;
+}
+
+.chevron {
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.placeholderOption {
+  color: var(--text-secondary);
+}

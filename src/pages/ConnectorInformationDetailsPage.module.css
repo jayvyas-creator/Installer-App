@@ -1,0 +1,42 @@
+.connectorRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-xs);
+}
+
+.connectorTexts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.connectorLabel {
+  font-size: var(--font-size-body);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.connectorMeta {
+  font-size: var(--font-size-micro);
+  color: var(--text-secondary);
+}
+
+.addRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 48px;
+  border: 1.5px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-brand-orange-600);
+  font-weight: 700;
+  font-size: var(--font-size-caption);
+}

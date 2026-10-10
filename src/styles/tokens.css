@@ -1,0 +1,203 @@
+/**
+ * Design tokens — DynaChrg Installer.
+ *
+ * Light mode only, by product decision: there is no dark-mode variant and
+ * none should be added without a deliberate design pass.
+ *
+ * Two tiers, same split used across the product's design docs:
+ *   "confirmed brand"  — fixed values that must not drift: brand orange,
+ *                         success green, the 38%-black disabled convention,
+ *                         the font pairing, and the 1000ms transition ceiling.
+ *   "proposed"         — everything built around those anchors (neutral
+ *                         ramp, semantic error/warning/info, type scale,
+ *                         spacing, radius, shadow, motion) — internally
+ *                         consistent today, open to a real design review.
+ */
+:root {
+  /* ======================= Confirmed brand ======================= */
+  --color-brand-orange-500: #ff851b;
+  --color-brand-orange-600: #e8710a;
+  --color-brand-orange-700: #c95f06;
+  --color-brand-orange-100: #ffe3c2;
+  --color-brand-orange-50: #fff3e6;
+
+  --color-success-600: #388e3c;
+  --color-success-700: #2e7431;
+  --color-success-100: #cfe9d1;
+  --color-success-50: #eaf6eb;
+
+  --color-disabled-overlay: rgba(0, 0, 0, 0.38);
+
+  --font-family-base:
+    "Lato", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --duration-standard-max: 1000ms;
+
+  /* ======================= Proposed: neutrals ===================== */
+  /* OKLCH, hue 55 (shares the brand orange's hue) at very low, near-constant
+     chroma. Enough to keep the ramp from reading as cold blue-gray, not
+     enough to read as beige/khaki — the old sRGB ramp carried chroma up to
+     ~0.03 in the 200-400 range, which is what made cards and dividers look
+     like stained paper instead of a precise neutral. Chroma tapers toward
+     the lightness extremes per OKLCH convention (garish otherwise). */
+  --color-neutral-0: oklch(0.995 0.002 55);
+  --color-neutral-25: oklch(0.985 0.003 55);
+  --color-neutral-50: oklch(0.965 0.004 55);
+  --color-neutral-75: oklch(0.945 0.005 55);
+  --color-neutral-100: oklch(0.92 0.006 55);
+  --color-neutral-200: oklch(0.865 0.007 55);
+  --color-neutral-300: oklch(0.78 0.008 55);
+  --color-neutral-400: oklch(0.655 0.009 55);
+  --color-neutral-500: oklch(0.53 0.009 55);
+  --color-neutral-600: oklch(0.42 0.008 55);
+  --color-neutral-700: oklch(0.32 0.007 55);
+  --color-neutral-800: oklch(0.225 0.006 55);
+  --color-neutral-900: oklch(0.155 0.004 55);
+
+  /* ======================= Proposed: semantic ===================== */
+  --color-error-600: #d53f3f;
+  --color-error-700: #b32f2f;
+  --color-error-100: #f7d4d4;
+  --color-error-50: #fcecec;
+
+  --color-warning-600: #a8670a;
+  --color-warning-100: #f3dfb8;
+  --color-warning-50: #fbf2e0;
+
+  --color-info-600: #2f6fb3;
+  --color-info-100: #cfe0f2;
+  --color-info-50: #eaf2fa;
+
+  /* ======================= Proposed: surfaces ====================== */
+  --surface-page: var(--color-neutral-0);
+  --surface-card: var(--color-neutral-0);
+  --surface-sunken: var(--color-neutral-75);
+  --surface-brand: var(--color-brand-orange-500);
+  --surface-brand-subtle: var(--color-brand-orange-50);
+  --surface-success-subtle: var(--color-success-50);
+  --surface-error-subtle: var(--color-error-50);
+  --surface-warning-subtle: var(--color-warning-50);
+  --surface-info-subtle: var(--color-info-50);
+  --surface-overlay-scrim: rgba(28, 22, 18, 0.45);
+
+  /* ======================= Proposed: text ========================== */
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-600);
+  --text-tertiary: var(--color-neutral-500);
+  --text-disabled: var(--color-disabled-overlay);
+  --text-on-brand: var(--color-neutral-0);
+  --text-on-success: var(--color-neutral-0);
+  --text-link: var(--color-brand-orange-600);
+  --text-error: var(--color-error-700);
+  --text-success: var(--color-success-700);
+  --text-warning: var(--color-warning-600);
+  --text-info: var(--color-info-600);
+
+  /* ======================= Proposed: borders ======================= */
+  --border-subtle: var(--color-neutral-200);
+  --border-default: var(--color-neutral-300);
+  --border-strong: var(--color-neutral-400);
+  --border-focus: var(--color-brand-orange-500);
+  --border-error: var(--color-error-600);
+  --border-success: var(--color-success-600);
+
+  /* ======================= Proposed: type scale ==================== */
+  /* Mobile-first: legible at arm's length, outdoors, on a work site. */
+  --font-size-display: 1.75rem; /* 28px */
+  --line-height-display: 2.125rem; /* 34px */
+  --weight-display: 800;
+
+  --font-size-title: 1.375rem; /* 22px */
+  --line-height-title: 1.75rem; /* 28px */
+  --weight-title: 700;
+
+  --font-size-headline: 1.0625rem; /* 17px */
+  --line-height-headline: 1.5rem; /* 24px */
+  --weight-headline: 700;
+
+  --font-size-body-lg: 1rem; /* 16px */
+  --line-height-body-lg: 1.5rem; /* 24px */
+  --weight-body-lg: 500;
+
+  --font-size-body: 0.9375rem; /* 15px */
+  --line-height-body: 1.375rem; /* 22px */
+  --weight-body: 400;
+
+  --font-size-caption: 0.8125rem; /* 13px */
+  --line-height-caption: 1.125rem; /* 18px */
+  --weight-caption: 500;
+
+  --font-size-micro: 0.6875rem; /* 11px */
+  --line-height-micro: 0.875rem; /* 14px */
+  --weight-micro: 700;
+  --tracking-micro: 0.06em;
+
+  /* ======================= Proposed: spacing (4px base) ============ */
+  --space-1: 0.25rem; /* 4 */
+  --space-2: 0.5rem; /* 8 */
+  --space-3: 0.75rem; /* 12 */
+  --space-4: 1rem; /* 16 */
+  --space-5: 1.25rem; /* 20 */
+  --space-6: 1.5rem; /* 24 */
+  --space-8: 2rem; /* 32 */
+  --space-10: 2.5rem; /* 40 */
+  --space-12: 3rem; /* 48 */
+  --space-16: 4rem; /* 64 */
+
+  /* ======================= Proposed: radius ======================== */
+  --radius-sm: 0.5rem; /* 8 */
+  --radius-md: 0.75rem; /* 12 */
+  --radius-lg: 1rem; /* 16 */
+  --radius-xl: 1.5rem; /* 24 */
+  --radius-full: 999px;
+
+  /* ======================= Proposed: elevation ====================== */
+  /* The old scale's alpha topped out at 0.14 with a 1px starting offset —
+     imperceptible on a bright outdoor screen, which left every card and
+     button reading flat. Umbra is warm-neutral (matches the ramp's hue),
+     each step pairs a tight contact shadow with a softer ambient one so
+     elevation reads as a real light source, not a blur filter. */
+  --shadow-color: oklch(0.18 0.014 55);
+  --shadow-xs: 0 1px 2px oklch(0.18 0.014 55 / 0.09);
+  --shadow-sm:
+    0 1px 2px oklch(0.18 0.014 55 / 0.07), 0 4px 10px oklch(0.18 0.014 55 / 0.12);
+  --shadow-md:
+    0 2px 4px oklch(0.18 0.014 55 / 0.07), 0 12px 28px oklch(0.18 0.014 55 / 0.16);
+  --shadow-lg:
+    0 6px 12px oklch(0.18 0.014 55 / 0.1), 0 24px 56px oklch(0.18 0.014 55 / 0.2);
+  /* Upward casts, for bars docked to the bottom edge (sticky footer). */
+  --shadow-up-sm:
+    0 -1px 2px oklch(0.18 0.014 55 / 0.05), 0 -6px 20px oklch(0.18 0.014 55 / 0.09);
+  /* The one warm shadow in the system: reserved for the single highest-
+     commitment action per screen (the primary footer CTA) so it reads as
+     the thing to press, not just another bordered rectangle. */
+  --shadow-button:
+    0 2px 4px oklch(0.18 0.014 55 / 0.1), 0 10px 22px oklch(0.7 0.17 55 / 0.3);
+  --shadow-focus-ring: 0 0 0 4px rgba(255, 133, 27, 0.24);
+  --shadow-focus-ring-error: 0 0 0 4px rgba(213, 63, 63, 0.2);
+
+  /* ======================= Proposed: motion ========================= */
+  /* --duration-standard-max (1000ms, confirmed) is a ceiling for the
+     biggest choreographed moments (full-step wizard transitions, the
+     commissioning success sequence) — not a default. Everything smaller
+     and more frequent (taps, toggles, field focus) stays snappy. */
+  --duration-instant: 100ms;
+  --duration-fast: 160ms;
+  --duration-base: 220ms;
+  --duration-moderate: 360ms;
+  --duration-slow: 560ms;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-decel: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accel: cubic-bezier(0.4, 0, 1, 1);
+
+  /* ======================= Proposed: misc =========================== */
+  --touch-target-min: 44px;
+  --content-max-width: 30rem; /* 480px — the wizard column on larger viewports */
+
+  --z-header: 100;
+  --z-stepper: 110;
+  --z-overlay: 200;
+  --z-toast: 300;
+}
