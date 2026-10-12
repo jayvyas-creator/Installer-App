@@ -98,10 +98,10 @@ export function AutomatedOcppTestingPage() {
               <span className={styles.iconSlot} aria-hidden="true">
                 {step.status === "pending" && <span className={styles.pendingDot} />}
                 {step.status === "running" && (
-                  <Loader2 size={18} className="spin" color="var(--color-brand-orange-500)" />
+                  <Loader2 size={18} className={`spin ${styles.iconRunning}`} />
                 )}
-                {step.status === "passed" && <Check size={18} color="var(--color-success-600)" />}
-                {step.status === "failed" && <X size={18} color="var(--color-error-600)" />}
+                {step.status === "passed" && <Check size={18} className={styles.iconPassed} />}
+                {step.status === "failed" && <X size={18} className={styles.iconFailed} />}
               </span>
               <span className={styles.stepLabel}>{step.label}</span>
               <StatusPill tone={STEP_STATUS_TONE[step.status]}>

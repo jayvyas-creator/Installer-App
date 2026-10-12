@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,8 +24,13 @@ export function ConnectorInformationDetailsPage() {
   const [showAddForm, setShowAddForm] = useState(state.connectors.length === 0);
   const nextConnectorId = useRef(0);
 
+  useEffect(() => {
+    if (!electrical) {
+      navigate("/charger-electrical", { replace: true });
+    }
+  }, [electrical, navigate]);
+
   if (!electrical) {
-    navigate("/charger-electrical", { replace: true });
     return null;
   }
 
@@ -146,7 +151,7 @@ export function ConnectorInformationDetailsPage() {
               options={electrical.assignedPhases.map((p) => ({ value: p, label: PHASE_LABELS[p] }))}
             />
             <div className={styles.formActions}>
-              <button type="button" className={styles.addRow} onClick={addConnector}>
+              <button type="button" className={formStyles.dashedAddRow} onClick={addConnector}>
                 <Plus size={16} aria-hidden />
                 Add connector
               </button>
@@ -158,7 +163,7 @@ export function ConnectorInformationDetailsPage() {
             </div>
           </div>
         ) : (
-          <button type="button" className={styles.addRow} onClick={() => setShowAddForm(true)}>
+          <button type="button" className={formStyles.dashedAddRow} onClick={() => setShowAddForm(true)}>
             <Plus size={16} aria-hidden />
             Add another connector
           </button>

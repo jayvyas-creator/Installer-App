@@ -47,7 +47,7 @@ export function Button({
       {...rest}
     >
       {loading ? (
-        <Loader2 className={styles.spinner} size={size === "lg" ? 20 : 18} aria-hidden />
+        <Loader2 className="spin" size={size === "lg" ? 20 : 18} aria-hidden />
       ) : (
         leadingIcon && (
           <span className={styles.icon} aria-hidden>

@@ -1,7 +1,7 @@
 import { Component, Fragment, type ErrorInfo, type ReactNode } from "react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
-import styles from "./ErrorBoundary.module.css";
+import styles from "@/styles/outcome.module.css";
 
 interface ErrorBoundaryProps {
   children: ReactNode;

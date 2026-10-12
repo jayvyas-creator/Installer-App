@@ -75,7 +75,7 @@ export function AppShell({
           <Stepper {...stepper} />
         </div>
       )}
-      <div className={styles.content}>
+      <main className={styles.content}>
         <div className={styles.inner}>
           {isOffline && (
             <div className={styles.offlineBanner}>
@@ -88,7 +88,7 @@ export function AppShell({
           )}
           {children}
         </div>
-      </div>
+      </main>
       {footer && (
         <div className={styles.footerBar}>
           <div className={styles.footerInner}>{footer}</div>

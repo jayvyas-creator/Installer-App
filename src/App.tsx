@@ -61,8 +61,11 @@ function RootRoute() {
 function AnimatedRoutes() {
   const location = useLocation();
 
+  // popLayout overlaps the outgoing and incoming page animations instead of
+  // running them in sequence — this is a 16-step wizard, and mode="wait"
+  // was adding ~640ms of pure animation to every step.
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/splash" element={<PageTransition ease="expo"><SplashPage /></PageTransition>} />
         <Route path="/" element={<PageTransition><RootRoute /></PageTransition>} />

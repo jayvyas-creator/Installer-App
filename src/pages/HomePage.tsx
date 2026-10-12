@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Drawer } from "vaul";
 import { toast } from "sonner";
@@ -33,6 +33,8 @@ export function HomePage() {
   const [error, setError] = useState<string | undefined>();
   const [scanning, setScanning] = useState(false);
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
+  const scanTriggerRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const hasDraft =
     Boolean(state.chargerId) &&
@@ -95,6 +97,23 @@ export function HomePage() {
     proceedWithId(DEMO_SCANNED_ID);
   }
 
+  useEffect(() => {
+    if (!scanning) return;
+    const trigger = scanTriggerRef.current;
+    closeButtonRef.current?.focus();
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setScanning(false);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      trigger?.focus();
+    };
+  }, [scanning]);
+
   return (
     <AppShell showHelp>
       <div className={styles.wrap}>
@@ -117,6 +136,7 @@ export function HomePage() {
         <form className={styles.form} onSubmit={handleSubmit}>
           <button
             type="button"
+            ref={scanTriggerRef}
             className={styles.scanTrigger}
             onClick={() => setShowPermissionSheet(true)}
           >
@@ -170,12 +190,16 @@ export function HomePage() {
         {scanning && (
           <motion.div
             className={styles.overlay}
+            role="dialog"
+            aria-modal="true"
+            aria-label="QR code scanner"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <div className={styles.overlayHeader}>
               <IconButton
+                ref={closeButtonRef}
                 aria-label="Close scanner"
                 tone="onBrand"
                 onClick={() => setScanning(false)}

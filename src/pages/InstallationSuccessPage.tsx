@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import styles from "./ProcessingPage.module.css";
+import styles from "@/styles/outcome.module.css";
 
 export function InstallationSuccessPage() {
   const navigate = useNavigate();

@@ -5,6 +5,36 @@
   padding: var(--space-3) var(--space-5) var(--space-4);
 }
 
+.meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.stepName {
+  font-size: var(--font-size-caption);
+  font-weight: 700;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stepCount {
+  flex-shrink: 0;
+  font-size: var(--font-size-caption);
+  font-weight: var(--weight-micro);
+  letter-spacing: var(--tracking-micro);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.stepCountDivider {
+  margin: 0 0.125em;
+  color: var(--border-strong);
+}
+
 .track {
   display: flex;
   gap: var(--space-1);
@@ -14,31 +44,39 @@
   flex: 1;
   height: 4px;
   border-radius: var(--radius-full);
-  background: var(--color-neutral-200);
-  overflow: hidden;
+  background: var(--border-subtle);
+  overflow: visible;
   position: relative;
+  transition: transform var(--duration-base) var(--ease-out-expo);
 }
 
 .segmentFill {
   position: absolute;
   inset: 0;
-  background: var(--color-brand-orange-500);
   border-radius: var(--radius-full);
+  background: var(--color-brand-orange-600);
   transform-origin: left;
-  transition: transform var(--duration-slow) var(--ease-standard);
+  transition:
+    transform var(--duration-slow) var(--ease-out-expo),
+    background-color var(--duration-base) var(--ease-standard);
 }
 
 .segment[data-state="upcoming"] .segmentFill {
   transform: scaleX(0);
 }
 
-.segment[data-state="current"] .segmentFill {
-  transform: scaleX(1);
-  animation: pulse 1.6s var(--ease-standard) infinite;
-}
-
 .segment[data-state="done"] .segmentFill {
   transform: scaleX(1);
+}
+
+.segment[data-state="current"] {
+  transform: scaleY(1.6);
+}
+
+.segment[data-state="current"] .segmentFill {
+  transform: scaleX(1);
+  background: var(--color-brand-orange-500);
+  animation: pulse 1.8s var(--ease-standard) infinite;
 }
 
 @keyframes pulse {
@@ -47,20 +85,16 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.6;
   }
 }
 
-.stepLabel {
-  font-size: var(--font-size-caption);
-  font-weight: 700;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 @media (prefers-reduced-motion: reduce) {
+  .segment,
+  .segmentFill {
+    transition: none;
+  }
+
   .segment[data-state="current"] .segmentFill {
     animation: none;
   }

@@ -18,6 +18,7 @@
   --color-brand-orange-500: #ff851b;
   --color-brand-orange-600: #e8710a;
   --color-brand-orange-700: #c95f06;
+  --color-brand-orange-800: #b85600;
   --color-brand-orange-100: #ffe3c2;
   --color-brand-orange-50: #fff3e6;
 
@@ -90,7 +91,10 @@
   --text-disabled: var(--color-disabled-overlay);
   --text-on-brand: var(--color-neutral-0);
   --text-on-success: var(--color-neutral-0);
-  --text-link: var(--color-brand-orange-600);
+  /* -800, not -600: -600 is 3.09:1 on white, below the 4.5:1 WCAG 1.4.3
+     floor for normal-size text. Non-text uses of -600 (icons, fills,
+     borders) are unaffected — that's 1.4.11's looser 3:1 bar. */
+  --text-link: var(--color-brand-orange-800);
   --text-error: var(--color-error-700);
   --text-success: var(--color-success-700);
   --text-warning: var(--color-warning-600);
@@ -100,11 +104,11 @@
   --border-subtle: var(--color-neutral-200);
   --border-default: var(--color-neutral-300);
   --border-strong: var(--color-neutral-400);
-  /* Field-border tone, intentionally lighter than neutral-500. This dips
-     below the WCAG 1.4.11 3:1 boundary-contrast guideline for an
-     outline-only field at rest (a deliberate tradeoff for a lighter look);
-     focus/error states still carry their own stronger border + ring. */
-  --border-field: var(--color-neutral-400);
+  /* Field-border tone, matched to --border-subtle. This is well below the
+     WCAG 1.4.11 3:1 boundary-contrast guideline for an outline-only field
+     at rest (a deliberate tradeoff for a lighter look); focus/error states
+     still carry their own stronger border + ring. */
+  --border-field: var(--color-neutral-200);
   --border-focus: var(--color-brand-orange-500);
   --border-error: var(--color-error-600);
   --border-success: var(--color-success-600);

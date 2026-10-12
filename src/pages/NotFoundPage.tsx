@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
-import styles from "./NotFoundPage.module.css";
+import styles from "@/styles/outcome.module.css";
 
 export function NotFoundPage() {
   const navigate = useNavigate();

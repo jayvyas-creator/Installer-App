@@ -66,3 +66,25 @@
   font-size: var(--font-size-caption);
   color: var(--text-secondary);
 }
+
+.dashedAddRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--text-link);
+  font-weight: 600;
+  font-size: var(--font-size-caption);
+  transition: border-color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
+}
+
+.dashedAddRow:hover {
+  background: var(--color-brand-orange-50);
+  border-color: var(--color-brand-orange-500);
+}

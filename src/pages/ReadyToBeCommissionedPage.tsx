@@ -5,7 +5,7 @@ import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
 import { StatusPill } from "@/components/atoms/StatusPill";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import styles from "./ProcessingPage.module.css";
+import styles from "@/styles/outcome.module.css";
 import formStyles from "./shared/form.module.css";
 
 export function ReadyToBeCommissionedPage() {

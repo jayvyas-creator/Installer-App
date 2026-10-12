@@ -70,7 +70,7 @@ export function SiteInformationPage() {
 
         {visibleAreas.length === 0 ? (
           <div className={styles.emptyState}>
-            <MapPinOff size={32} color="var(--text-tertiary)" aria-hidden />
+            <MapPinOff size={32} className={styles.emptyIcon} aria-hidden />
             <span className={styles.emptyTitle}>No site areas configured</span>
             <p className={styles.emptyBody}>
               This location doesn't have any site areas set up yet. Add one now to continue the
@@ -117,7 +117,7 @@ export function SiteInformationPage() {
             </RadioGroup.Root>
             <button
               type="button"
-              className={styles.addAreaRow}
+              className={formStyles.dashedAddRow}
               onClick={() => navigate("/site-area/new")}
             >
               <Plus size={18} aria-hidden />

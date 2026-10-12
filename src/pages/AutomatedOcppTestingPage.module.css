@@ -42,6 +42,18 @@
   border: 2px solid var(--border-strong);
 }
 
+.iconRunning {
+  color: var(--color-brand-orange-500);
+}
+
+.iconPassed {
+  color: var(--color-success-600);
+}
+
+.iconFailed {
+  color: var(--color-error-600);
+}
+
 .stepLabel {
   flex: 1;
   min-width: 0;

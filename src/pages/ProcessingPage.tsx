@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/organisms/AppShell";
 import { ProgressRing } from "@/components/atoms/ProgressRing";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
+import outcomeStyles from "@/styles/outcome.module.css";
 import styles from "./ProcessingPage.module.css";
 
 export interface ProcessingFailure {
@@ -42,14 +43,19 @@ export function ProcessingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, attempt]);
 
+  useEffect(() => {
+    if (!state) {
+      navigate("/", { replace: true });
+    }
+  }, [state, navigate]);
+
   if (!state) {
-    navigate("/", { replace: true });
     return null;
   }
 
   return (
     <AppShell title="" showHelp={!failed}>
-      <div className={styles.wrap}>
+      <div className={outcomeStyles.wrap}>
         {!failed ? (
           <>
             <h1 className="sr-only">{state.label}</h1>

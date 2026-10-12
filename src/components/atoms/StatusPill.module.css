@@ -46,5 +46,5 @@
 
 .brand {
   background: var(--surface-brand-subtle);
-  color: var(--color-brand-orange-600);
+  color: var(--text-link);
 }
