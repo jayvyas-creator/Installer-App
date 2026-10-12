@@ -20,6 +20,7 @@ export function ConnectorInformationDetailsPage() {
   const [connectors, setLocalConnectors] = useState<ConnectorConfig[]>(state.connectors);
   const [currentType, setCurrentType] = useState<ConnectorCurrentType>("AC");
   const [phase, setPhase] = useState<Phase>(electrical?.assignedPhases[0] ?? "L1");
+  const [showAddForm, setShowAddForm] = useState(state.connectors.length === 0);
   const nextConnectorId = useRef(0);
 
   if (!electrical) {
@@ -37,6 +38,7 @@ export function ConnectorInformationDetailsPage() {
       maxAmperage: electrical!.maxAmperage,
     };
     setLocalConnectors((prev) => [...prev, next]);
+    setShowAddForm(false);
   }
 
   function removeConnector(id: string) {
@@ -112,25 +114,39 @@ export function ConnectorInformationDetailsPage() {
           </div>
         )}
 
-        <div className={formStyles.section}>
-          <span className={formStyles.sectionTitle}>New connector</span>
-          <Select
-            label="Connector type"
-            value={currentType}
-            onChange={(e) => setCurrentType(e.target.value as ConnectorCurrentType)}
-            options={[...CONNECTOR_TYPE_OPTIONS]}
-          />
-          <Select
-            label="Phase assignment"
-            value={phase}
-            onChange={(e) => setPhase(e.target.value as Phase)}
-            options={electrical.assignedPhases.map((p) => ({ value: p, label: PHASE_LABELS[p] }))}
-          />
-          <button type="button" className={styles.addRow} onClick={addConnector}>
+        {showAddForm ? (
+          <div className={formStyles.section}>
+            <span className={formStyles.sectionTitle}>New connector</span>
+            <Select
+              label="Connector type"
+              value={currentType}
+              onChange={(e) => setCurrentType(e.target.value as ConnectorCurrentType)}
+              options={[...CONNECTOR_TYPE_OPTIONS]}
+            />
+            <Select
+              label="Phase assignment"
+              value={phase}
+              onChange={(e) => setPhase(e.target.value as Phase)}
+              options={electrical.assignedPhases.map((p) => ({ value: p, label: PHASE_LABELS[p] }))}
+            />
+            <div className={styles.formActions}>
+              <button type="button" className={styles.addRow} onClick={addConnector}>
+                <Plus size={16} aria-hidden />
+                Add connector
+              </button>
+              {connectors.length > 0 && (
+                <button type="button" className={styles.cancelRow} onClick={() => setShowAddForm(false)}>
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <button type="button" className={styles.addRow} onClick={() => setShowAddForm(true)}>
             <Plus size={16} aria-hidden />
-            Add connector
+            Add another connector
           </button>
-        </div>
+        )}
       </div>
     </AppShell>
   );
