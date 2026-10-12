@@ -14,6 +14,10 @@ export function EnterTokenIdPage() {
   const [token, setToken] = useState(state.tokenId);
   const [error, setError] = useState<string | undefined>();
 
+  function handleTokenBlur() {
+    setError(token.trim() ? undefined : "Enter the token ID from the charger's label.");
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!token.trim()) {
@@ -68,6 +72,7 @@ export function EnterTokenIdPage() {
           placeholder="TKN-9F31-2287"
           value={token}
           onChange={(e) => setToken(e.target.value)}
+          onBlur={handleTokenBlur}
           errorText={error}
           leadingIcon={<KeyRound size={18} />}
           autoCapitalize="characters"

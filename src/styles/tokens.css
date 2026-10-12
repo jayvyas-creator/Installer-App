@@ -100,11 +100,11 @@
   --border-subtle: var(--color-neutral-200);
   --border-default: var(--color-neutral-300);
   --border-strong: var(--color-neutral-400);
-  /* Dedicated field-border tone: --border-default (~2:1 on white) reads fine
-     as a dividers/subtle-boundary color but fails WCAG 1.4.11 (3:1) as the
-     sole boundary indicator on every text input/select. Form controls use
-     this instead. */
-  --border-field: var(--color-neutral-500);
+  /* Field-border tone, intentionally lighter than neutral-500. This dips
+     below the WCAG 1.4.11 3:1 boundary-contrast guideline for an
+     outline-only field at rest (a deliberate tradeoff for a lighter look);
+     focus/error states still carry their own stronger border + ring. */
+  --border-field: var(--color-neutral-400);
   --border-focus: var(--color-brand-orange-500);
   --border-error: var(--color-error-600);
   --border-success: var(--color-success-600);

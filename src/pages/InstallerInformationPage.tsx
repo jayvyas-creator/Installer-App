@@ -16,6 +16,17 @@ export function InstallerInformationPage() {
   const [email, setEmail] = useState(state.installerInfo.email);
   const [errors, setErrors] = useState<{ fullName?: string; phone?: string; email?: string }>({});
 
+  function validateField(field: "fullName" | "phone" | "email") {
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (field === "fullName") next.fullName = fullName.trim() ? undefined : "Enter your full name.";
+      if (field === "phone") next.phone = phone.trim() ? undefined : "Enter a phone number.";
+      if (field === "email")
+        next.email = EMAIL_PATTERN.test(email.trim()) ? undefined : "Enter a valid email address.";
+      return next;
+    });
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const nextErrors: typeof errors = {};
@@ -53,6 +64,7 @@ export function InstallerInformationPage() {
           placeholder="Jordan Avery"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          onBlur={() => validateField("fullName")}
           errorText={errors.fullName}
           autoComplete="name"
           required
@@ -63,6 +75,7 @@ export function InstallerInformationPage() {
           placeholder="(555) 010-0199"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          onBlur={() => validateField("phone")}
           errorText={errors.phone}
           autoComplete="tel"
           required
@@ -73,6 +86,7 @@ export function InstallerInformationPage() {
           placeholder="jordan@fieldcrew.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onBlur={() => validateField("email")}
           errorText={errors.email}
           autoComplete="email"
           required

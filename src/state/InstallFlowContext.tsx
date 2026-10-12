@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   DEFAULT_INSTALLER_INFO,
   DEFAULT_OCPP_STEPS,
@@ -63,10 +71,30 @@ function createInitialState(): InstallFlowState {
   };
 }
 
+const STORAGE_KEY = "dynachrg-installer-flow-state-v1";
+
+function loadPersistedState(): InstallFlowState {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return createInitialState();
+    return { ...createInitialState(), ...(JSON.parse(raw) as Partial<InstallFlowState>) };
+  } catch {
+    return createInitialState();
+  }
+}
+
 const InstallFlowContext = createContext<InstallFlowContextValue | null>(null);
 
 export function InstallFlowProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<InstallFlowState>(createInitialState);
+  const [state, setState] = useState<InstallFlowState>(loadPersistedState);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Private browsing or full storage: fall back to in-memory only.
+    }
+  }, [state]);
 
   const setChargerId = useCallback((chargerId: string, failureMode: FailureMode) => {
     setState((prev) => ({ ...prev, chargerId, failureMode }));

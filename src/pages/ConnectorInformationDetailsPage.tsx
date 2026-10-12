@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Select } from "@/components/atoms/Select";
@@ -42,7 +43,22 @@ export function ConnectorInformationDetailsPage() {
   }
 
   function removeConnector(id: string) {
+    const index = connectors.findIndex((c) => c.id === id);
+    if (index === -1) return;
+    const removed = connectors[index];
     setLocalConnectors((prev) => prev.filter((c) => c.id !== id));
+    toast(`${removed.label} removed`, {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          setLocalConnectors((prev) => {
+            const next = [...prev];
+            next.splice(index, 0, removed);
+            return next;
+          });
+        },
+      },
+    });
   }
 
   function handleContinue() {

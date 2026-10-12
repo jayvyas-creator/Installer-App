@@ -70,6 +70,15 @@ export function HomePage() {
     proceedWithId(chargerId);
   }
 
+  function handleChargerIdBlur() {
+    const trimmed = chargerId.trim();
+    if (!trimmed) {
+      setError(undefined);
+      return;
+    }
+    setError(/^DC-/i.test(trimmed) ? undefined : "Enter a valid charger ID (starts with \"DC-\").");
+  }
+
   function handleAllowCamera() {
     setShowPermissionSheet(false);
     setScanning(true);
@@ -122,6 +131,7 @@ export function HomePage() {
             placeholder="DC-48213"
             value={chargerId}
             onChange={(e) => setChargerIdInput(e.target.value)}
+            onBlur={handleChargerIdBlur}
             errorText={error}
             autoCapitalize="characters"
             autoCorrect="off"
