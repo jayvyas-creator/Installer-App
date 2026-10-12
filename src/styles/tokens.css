@@ -169,11 +169,6 @@
   /* Upward casts, for bars docked to the bottom edge (sticky footer). */
   --shadow-up-sm:
     0 -1px 2px oklch(0.18 0.014 235 / 0.03), 0 -2px 8px oklch(0.18 0.014 235 / 0.05);
-  /* The one color-matched shadow in the system: reserved for the single
-     highest-commitment action per screen (the primary footer CTA) so it
-     reads as the thing to press — a soft tinted lift, not a glow. */
-  --shadow-button:
-    0 1px 2px oklch(0.18 0.014 252 / 0.06), 0 6px 14px oklch(0.238 0.071 252 / 0.22);
   --shadow-focus-ring: 0 0 0 4px rgba(255, 133, 27, 0.24);
   --shadow-focus-ring-error: 0 0 0 4px rgba(213, 63, 63, 0.2);
 

@@ -10,14 +10,13 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--space-3);
   padding: var(--space-4) var(--space-4) var(--space-8);
 }
 
 .logoMark {
-  width: 64px;
+  width: min(55vw, 180px);
   height: auto;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .title {
@@ -25,6 +24,7 @@
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+  margin-bottom: var(--space-1);
 }
 
 .subtitle {

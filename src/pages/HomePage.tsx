@@ -11,7 +11,7 @@ import { ResumeInstallBanner } from "@/components/molecules/ResumeInstallBanner"
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { buildMockChargerDetails, resolveFailureMode } from "@/constants/mockData";
 import type { ProcessingState } from "./ProcessingPage";
-import dynachrgMark from "@/assets/dynachrg-mark.png";
+import dynachrgLogo from "@/assets/dynachrg-logo.png";
 import styles from "./HomePage.module.css";
 
 const DEMO_SCANNED_ID = "DC-48213";
@@ -108,8 +108,8 @@ export function HomePage() {
           />
         )}
         <div className={styles.hero}>
-          <img className={styles.logoMark} src={dynachrgMark} alt="DynaChrg" />
-          <h1 className={styles.title}>DynaChrg Installer</h1>
+          <img className={styles.logoMark} src={dynachrgLogo} alt="DynaChrg" />
+          <h1 className={styles.title}>Installer</h1>
           <p className={styles.subtitle}>
             Scan the charger's QR code or enter its ID to start the install.
           </p>

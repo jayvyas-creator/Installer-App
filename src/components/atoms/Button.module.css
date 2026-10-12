@@ -63,12 +63,10 @@
 .primary {
   background: var(--color-cta-500);
   color: var(--text-on-brand);
-  box-shadow: var(--shadow-button);
 }
 
 .primary:active:not(:disabled) {
   background: var(--color-cta-700);
-  box-shadow: var(--shadow-sm);
 }
 
 .primary:hover:not(:disabled) {
@@ -83,7 +81,6 @@
 .primary:disabled {
   background: var(--color-neutral-200);
   color: var(--text-disabled);
-  box-shadow: none;
 }
 
 .secondary {
