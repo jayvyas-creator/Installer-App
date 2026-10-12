@@ -1,27 +1,43 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { QrCode, X, Zap } from "lucide-react";
+import { QrCode, X } from "lucide-react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
 import { IconButton } from "@/components/atoms/IconButton";
 import { Toast } from "@/components/molecules/Toast";
+import { ResumeInstallBanner } from "@/components/molecules/ResumeInstallBanner";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import { resolveFailureMode } from "@/constants/mockData";
+import { buildMockChargerDetails, resolveFailureMode } from "@/constants/mockData";
 import type { ProcessingState } from "./ProcessingPage";
+import dynachrgMark from "@/assets/dynachrg-mark.png";
 import styles from "./HomePage.module.css";
 
 const DEMO_SCANNED_ID = "DC-48213";
 
+function resumeRoute(state: ReturnType<typeof useInstallFlow>["state"]): string {
+  if (state.selectedSiteAreaId) return "/charger-electrical";
+  if (state.tokenId) {
+    return state.tokenId.toUpperCase().includes("MULTI") ? "/select-site" : "/site-information";
+  }
+  if (state.installerInfo.fullName) return "/enter-token";
+  return "/validate-charger-details";
+}
+
 export function HomePage() {
   const navigate = useNavigate();
-  const { setChargerId } = useInstallFlow();
+  const { state, setChargerId, setChargerDetails, reset } = useInstallFlow();
   const [chargerId, setChargerIdInput] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [scanning, setScanning] = useState(false);
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  const hasDraft =
+    Boolean(state.chargerId) &&
+    Boolean(state.installerInfo.fullName) &&
+    state.failureMode !== "ACTIVE";
 
   useEffect(() => {
     if (!showPermissionSheet) return;
@@ -41,14 +57,21 @@ export function HomePage() {
     setError(undefined);
     const failureMode = resolveFailureMode(trimmed);
     setChargerId(trimmed, failureMode);
-    const next = failureMode === "ACTIVE" ? "/ready-to-charge" : "/installer-info";
-    const state: ProcessingState = {
+    let next = "/validate-charger-details";
+    if (failureMode === "NOTFOUND") {
+      next = "/no-charger-found";
+    } else if (failureMode === "ACTIVE") {
+      next = "/ready-to-charge";
+    } else {
+      setChargerDetails(buildMockChargerDetails(trimmed));
+    }
+    const processingState: ProcessingState = {
       label: "Looking up charger…",
       sublabel: `Checking records for ${trimmed.toUpperCase()}`,
       durationMs: 1100,
       next,
     };
-    navigate("/processing", { state });
+    navigate("/processing", { state: processingState });
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -76,10 +99,16 @@ export function HomePage() {
   return (
     <AppShell showHelp>
       <div className={styles.wrap}>
+        {hasDraft && (
+          <ResumeInstallBanner
+            chargerId={state.chargerId}
+            installerName={state.installerInfo.fullName}
+            onResume={() => navigate(resumeRoute(state))}
+            onDiscard={reset}
+          />
+        )}
         <div className={styles.hero}>
-          <div className={styles.logoMark}>
-            <Zap size={28} fill="currentColor" strokeWidth={0} />
-          </div>
+          <img className={styles.logoMark} src={dynachrgMark} alt="DynaChrg" />
           <h1 className={styles.title}>DynaChrg Installer</h1>
           <p className={styles.subtitle}>
             Scan the charger's QR code or enter its ID to start the install.

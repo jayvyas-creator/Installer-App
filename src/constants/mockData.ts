@@ -1,4 +1,10 @@
-import type { ChargerDetails, FailureMode, InstallerInfo, OcppStep } from "@/types";
+import type {
+  ChargerDetails,
+  DetectedConnector,
+  FailureMode,
+  InstallerInfo,
+  OcppStep,
+} from "@/types";
 
 export const DEFAULT_INSTALLER_INFO: InstallerInfo = {
   fullName: "",
@@ -9,10 +15,12 @@ export const DEFAULT_INSTALLER_INFO: InstallerInfo = {
 export function resolveFailureMode(chargerId: string): FailureMode {
   const normalized = chargerId.trim().toUpperCase();
   const known: FailureMode[] = [
+    "NOTFOUND",
     "NOAREA",
     "ONEAREA",
     "STEPFAIL",
     "INSTALLFAIL",
+    "NOHEARTBEAT",
     "COMMFAIL",
     "HWFAIL",
     "OCPPFAIL",
@@ -31,6 +39,17 @@ export function buildMockChargerDetails(chargerId: string): ChargerDetails {
     serialNumber: `SN-${chargerId.trim().toUpperCase().slice(-6).padStart(6, "0")}`,
     manufacturer: "DynaChrg Energy Systems",
   };
+}
+
+export function buildMockDetectedConnectors(chargerId: string): DetectedConnector[] {
+  const normalized = chargerId.trim().toUpperCase();
+  if (normalized.includes("MULTI")) {
+    return [
+      { id: "connector-1", label: "Connector A", currentType: "AC", status: "ready" },
+      { id: "connector-2", label: "Connector B", currentType: "DC", status: "ready" },
+    ];
+  }
+  return [{ id: "connector-1", label: "Connector A", currentType: "AC", status: "ready" }];
 }
 
 export const COMMUNICATION_CHECKLIST_ITEMS = [

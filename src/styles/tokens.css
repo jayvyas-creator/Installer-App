@@ -26,6 +26,10 @@
   --color-success-100: #cfe9d1;
   --color-success-50: #eaf6eb;
 
+  --color-cta-500: #001f3f;
+  --color-cta-600: #001939;
+  --color-cta-700: #001332;
+
   --color-disabled-overlay: rgba(0, 0, 0, 0.38);
 
   --font-family-base:
@@ -35,25 +39,23 @@
   --duration-standard-max: 1000ms;
 
   /* ======================= Proposed: neutrals ===================== */
-  /* OKLCH, hue 55 (shares the brand orange's hue) at very low, near-constant
-     chroma. Enough to keep the ramp from reading as cold blue-gray, not
-     enough to read as beige/khaki — the old sRGB ramp carried chroma up to
-     ~0.03 in the 200-400 range, which is what made cards and dividers look
-     like stained paper instead of a precise neutral. Chroma tapers toward
-     the lightness extremes per OKLCH convention (garish otherwise). */
-  --color-neutral-0: oklch(0.995 0.002 55);
-  --color-neutral-25: oklch(0.985 0.003 55);
-  --color-neutral-50: oklch(0.965 0.004 55);
-  --color-neutral-75: oklch(0.945 0.005 55);
-  --color-neutral-100: oklch(0.92 0.006 55);
-  --color-neutral-200: oklch(0.865 0.007 55);
-  --color-neutral-300: oklch(0.78 0.008 55);
-  --color-neutral-400: oklch(0.655 0.009 55);
-  --color-neutral-500: oklch(0.53 0.009 55);
-  --color-neutral-600: oklch(0.42 0.008 55);
-  --color-neutral-700: oklch(0.32 0.007 55);
-  --color-neutral-800: oklch(0.225 0.006 55);
-  --color-neutral-900: oklch(0.155 0.004 55);
+  /* OKLCH, hue 235 (cool slate, opposite the brand orange's hue) at very
+     low, near-constant chroma — a precise cool-neutral grey, not a tinted
+     one. Chroma tapers toward the lightness extremes per OKLCH convention
+     (garish otherwise). */
+  --color-neutral-0: oklch(0.995 0.002 235);
+  --color-neutral-25: oklch(0.985 0.003 235);
+  --color-neutral-50: oklch(0.965 0.004 235);
+  --color-neutral-75: oklch(0.945 0.005 235);
+  --color-neutral-100: oklch(0.92 0.006 235);
+  --color-neutral-200: oklch(0.865 0.007 235);
+  --color-neutral-300: oklch(0.78 0.008 235);
+  --color-neutral-400: oklch(0.655 0.009 235);
+  --color-neutral-500: oklch(0.53 0.009 235);
+  --color-neutral-600: oklch(0.42 0.008 235);
+  --color-neutral-700: oklch(0.32 0.007 235);
+  --color-neutral-800: oklch(0.225 0.006 235);
+  --color-neutral-900: oklch(0.155 0.004 235);
 
   /* ======================= Proposed: semantic ===================== */
   --color-error-600: #d53f3f;
@@ -153,27 +155,25 @@
   --radius-full: 999px;
 
   /* ======================= Proposed: elevation ====================== */
-  /* The old scale's alpha topped out at 0.14 with a 1px starting offset —
-     imperceptible on a bright outdoor screen, which left every card and
-     button reading flat. Umbra is warm-neutral (matches the ramp's hue),
-     each step pairs a tight contact shadow with a softer ambient one so
-     elevation reads as a real light source, not a blur filter. */
-  --shadow-color: oklch(0.18 0.014 55);
-  --shadow-xs: 0 1px 2px oklch(0.18 0.014 55 / 0.09);
+  /* Modern-flat scale: soft, low-opacity, tight blur radii — elevation
+     reads as a faint lift off the page, never a cast drop shadow. Umbra
+     is cool-neutral (matches the ramp's hue). */
+  --shadow-color: oklch(0.18 0.014 235);
+  --shadow-xs: 0 1px 2px oklch(0.18 0.014 235 / 0.04);
   --shadow-sm:
-    0 1px 2px oklch(0.18 0.014 55 / 0.07), 0 4px 10px oklch(0.18 0.014 55 / 0.12);
+    0 1px 2px oklch(0.18 0.014 235 / 0.04), 0 1px 3px oklch(0.18 0.014 235 / 0.06);
   --shadow-md:
-    0 2px 4px oklch(0.18 0.014 55 / 0.07), 0 12px 28px oklch(0.18 0.014 55 / 0.16);
+    0 2px 4px oklch(0.18 0.014 235 / 0.04), 0 4px 10px oklch(0.18 0.014 235 / 0.06);
   --shadow-lg:
-    0 6px 12px oklch(0.18 0.014 55 / 0.1), 0 24px 56px oklch(0.18 0.014 55 / 0.2);
+    0 4px 8px oklch(0.18 0.014 235 / 0.05), 0 10px 24px oklch(0.18 0.014 235 / 0.08);
   /* Upward casts, for bars docked to the bottom edge (sticky footer). */
   --shadow-up-sm:
-    0 -1px 2px oklch(0.18 0.014 55 / 0.05), 0 -6px 20px oklch(0.18 0.014 55 / 0.09);
-  /* The one warm shadow in the system: reserved for the single highest-
-     commitment action per screen (the primary footer CTA) so it reads as
-     the thing to press, not just another bordered rectangle. */
+    0 -1px 2px oklch(0.18 0.014 235 / 0.03), 0 -2px 8px oklch(0.18 0.014 235 / 0.05);
+  /* The one color-matched shadow in the system: reserved for the single
+     highest-commitment action per screen (the primary footer CTA) so it
+     reads as the thing to press — a soft tinted lift, not a glow. */
   --shadow-button:
-    0 2px 4px oklch(0.18 0.014 55 / 0.1), 0 10px 22px oklch(0.7 0.17 55 / 0.3);
+    0 1px 2px oklch(0.18 0.014 252 / 0.06), 0 6px 14px oklch(0.238 0.071 252 / 0.22);
   --shadow-focus-ring: 0 0 0 4px rgba(255, 133, 27, 0.24);
   --shadow-focus-ring-error: 0 0 0 4px rgba(213, 63, 63, 0.2);
 

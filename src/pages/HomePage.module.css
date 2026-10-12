@@ -15,16 +15,9 @@
 }
 
 .logoMark {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg);
-  background: var(--color-brand-orange-500);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-neutral-0);
+  width: 64px;
+  height: auto;
   margin-bottom: var(--space-2);
-  box-shadow: var(--shadow-md);
 }
 
 .title {

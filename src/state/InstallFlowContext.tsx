@@ -11,6 +11,7 @@ import type {
   FailureMode,
   InstallFlowState,
   InstallerInfo,
+  SiteArea,
 } from "@/types";
 
 const STEP_ORDER = [
@@ -33,6 +34,8 @@ interface InstallFlowContextValue {
   setChargerDetails: (details: ChargerDetails) => void;
   setInstallerInfo: (info: InstallerInfo) => void;
   setTokenId: (token: string) => void;
+  setSelectedSite: (siteId: string) => void;
+  addSiteArea: (area: SiteArea) => void;
   setSelectedSiteArea: (areaId: string) => void;
   setElectricalConfig: (config: ChargerElectricalConfig) => void;
   setConnectors: (connectors: ConnectorConfig[]) => void;
@@ -49,6 +52,7 @@ function createInitialState(): InstallFlowState {
     chargerDetails: null,
     installerInfo: DEFAULT_INSTALLER_INFO,
     tokenId: "",
+    selectedSiteId: null,
     siteAreas: MOCK_SITE_AREAS,
     selectedSiteAreaId: null,
     electricalConfig: null,
@@ -78,6 +82,14 @@ export function InstallFlowProvider({ children }: { children: ReactNode }) {
 
   const setTokenId = useCallback((token: string) => {
     setState((prev) => ({ ...prev, tokenId: token }));
+  }, []);
+
+  const setSelectedSite = useCallback((siteId: string) => {
+    setState((prev) => ({ ...prev, selectedSiteId: siteId }));
+  }, []);
+
+  const addSiteArea = useCallback((area: SiteArea) => {
+    setState((prev) => ({ ...prev, siteAreas: [...prev.siteAreas, area] }));
   }, []);
 
   const setSelectedSiteArea = useCallback((areaId: string) => {
@@ -125,6 +137,8 @@ export function InstallFlowProvider({ children }: { children: ReactNode }) {
       setChargerDetails,
       setInstallerInfo,
       setTokenId,
+      setSelectedSite,
+      addSiteArea,
       setSelectedSiteArea,
       setElectricalConfig,
       setConnectors,
@@ -139,6 +153,8 @@ export function InstallFlowProvider({ children }: { children: ReactNode }) {
       setChargerDetails,
       setInstallerInfo,
       setTokenId,
+      setSelectedSite,
+      addSiteArea,
       setSelectedSiteArea,
       setElectricalConfig,
       setConnectors,

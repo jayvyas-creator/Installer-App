@@ -61,17 +61,18 @@
 
 /* ---- variants ---- */
 .primary {
-  background: var(--color-brand-orange-500);
+  background: var(--color-cta-500);
   color: var(--text-on-brand);
   box-shadow: var(--shadow-button);
 }
 
 .primary:active:not(:disabled) {
+  background: var(--color-cta-700);
   box-shadow: var(--shadow-sm);
 }
 
 .primary:hover:not(:disabled) {
-  background: var(--color-brand-orange-600);
+  background: var(--color-cta-600);
 }
 
 .primary:focus-visible {

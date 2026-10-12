@@ -1,8 +1,10 @@
 import { ChevronLeft, Headphones } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconButton } from "@/components/atoms/IconButton";
 import { Stepper, type StepperProps } from "@/components/molecules/Stepper";
+import { ErrorBanner } from "@/components/molecules/ErrorBanner";
+import { Toast } from "@/components/molecules/Toast";
 import styles from "./AppShell.module.css";
 
 export interface AppShellProps {
@@ -25,6 +27,27 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const navigate = useNavigate();
+  const [isOffline, setIsOffline] = useState(
+    () => typeof navigator !== "undefined" && !navigator.onLine,
+  );
+  const [showBackOnline, setShowBackOnline] = useState(false);
+
+  useEffect(() => {
+    function handleOffline() {
+      setIsOffline(true);
+    }
+    function handleOnline() {
+      setIsOffline(false);
+      setShowBackOnline(true);
+      window.setTimeout(() => setShowBackOnline(false), 3200);
+    }
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online", handleOnline);
+    };
+  }, []);
 
   return (
     <div className={styles.shell}>
@@ -55,13 +78,25 @@ export function AppShell({
         </div>
       )}
       <div className={styles.content}>
-        <div className={styles.inner}>{children}</div>
+        <div className={styles.inner}>
+          {isOffline && (
+            <div className={styles.offlineBanner}>
+              <ErrorBanner
+                tone="warning"
+                title="You're offline"
+                description="Check your connection — you can keep working, and we'll pick back up once you're back online."
+              />
+            </div>
+          )}
+          {children}
+        </div>
       </div>
       {footer && (
         <div className={styles.footerBar}>
           <div className={styles.footerInner}>{footer}</div>
         </div>
       )}
+      <Toast open={showBackOnline} message="Back online." />
     </div>
   );
 }

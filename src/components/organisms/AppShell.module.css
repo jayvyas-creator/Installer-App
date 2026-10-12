@@ -67,6 +67,10 @@
   flex-direction: column;
 }
 
+.offlineBanner {
+  margin-bottom: var(--space-5);
+}
+
 .footerBar {
   flex-shrink: 0;
   display: flex;

@@ -31,7 +31,16 @@ export function CommunicationChecklistPage() {
               secondaryLabel: "Review checklist",
               secondaryTo: "/communication-checklist",
             }
-          : undefined,
+          : state.failureMode === "NOHEARTBEAT"
+            ? {
+                title: "No heartbeat received",
+                description:
+                  "The charger connected once but has stopped sending heartbeat signals. Power-cycle the unit and confirm the network light is solid before retrying.",
+                retryLabel: "Retry heartbeat check",
+                secondaryLabel: "Review checklist",
+                secondaryTo: "/communication-checklist",
+              }
+            : undefined,
     };
     navigate("/processing", { state: processingState });
   }

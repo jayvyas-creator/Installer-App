@@ -23,3 +23,4 @@ dist-ssr
 tempo/.tempo/
 tempo/node_modules/
 tempo/dist/
+.vercel

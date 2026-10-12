@@ -55,10 +55,19 @@ export type FailureMode =
   | "STEPFAIL"
   | "INSTALLFAIL"
   | "COMMFAIL"
+  | "NOHEARTBEAT"
   | "HWFAIL"
   | "OCPPFAIL"
   | "ACTIVE"
+  | "NOTFOUND"
   | "NONE";
+
+export interface DetectedConnector {
+  id: string;
+  label: string;
+  currentType: ConnectorCurrentType;
+  status: "ready" | "fault";
+}
 
 export interface InstallFlowState {
   chargerId: string;
@@ -66,6 +75,7 @@ export interface InstallFlowState {
   chargerDetails: ChargerDetails | null;
   installerInfo: InstallerInfo;
   tokenId: string;
+  selectedSiteId: string | null;
   siteAreas: SiteArea[];
   selectedSiteAreaId: string | null;
   electricalConfig: ChargerElectricalConfig | null;

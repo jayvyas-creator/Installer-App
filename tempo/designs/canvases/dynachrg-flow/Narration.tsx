@@ -12,7 +12,7 @@ export function IntroLegend() {
         <span className={styles.dot} />
         DynaChrg Installer — design canvas
       </span>
-      <h1 className={styles.title}>The full 16-screen install flow, mock data only</h1>
+      <h1 className={styles.title}>00 Splash through 16 Ready to be commissioned</h1>
       <p className={styles.body}>
         Read left to right: the top row is the happy path a field technician walks,
         start to finish. Alternate and failure states branch underneath the screen
@@ -72,8 +72,68 @@ export function CalloutNoChargerFound() {
   return (
     <Callout
       tone="neutral"
-      label="Designed, not yet wired up"
-      body="This screen exists for an unrecognized charger ID, but Home's current mock lookup always resolves a DC-prefixed ID — see handoff notes."
+      label="NOTFOUND charger ID → reachable now"
+      body='Home&apos;s mock lookup resolves any ID containing "NOTFOUND" (case-insensitive) straight to this screen, skipping the install wizard entirely.'
+    />
+  );
+}
+
+export function CalloutResumeDraft() {
+  return (
+    <Callout
+      tone="brand"
+      label="In-progress install → resumable"
+      body="Home shows this banner whenever a charger ID and installer name are already saved but the install hasn't finished — Resume jumps back to wherever the draft left off, Discard clears it."
+    />
+  );
+}
+
+export function CalloutOffline() {
+  return (
+    <Callout
+      tone="neutral"
+      label="Offline → back online, any screen"
+      body="AppShell listens for the browser's online/offline events globally, so this banner can appear over any screen in the flow — it isn't a dedicated route."
+    />
+  );
+}
+
+export function CalloutMultiSite() {
+  return (
+    <Callout
+      tone="brand"
+      label="Token covers > 1 site → pick one first"
+      body='A token containing "MULTI" routes here before Site information, so the installer picks a site before picking a site area within it.'
+    />
+  );
+}
+
+export function CalloutInstallFail() {
+  return (
+    <Callout
+      tone="error"
+      label="INSTALLFAIL → token doesn't match the charger"
+      body="Reuses the shared Processing-failure pattern: retry validation, or back out to re-enter the token."
+    />
+  );
+}
+
+export function CalloutNoHeartbeat() {
+  return (
+    <Callout
+      tone="error"
+      label="NOHEARTBEAT → distinct from a generic comm failure"
+      body="The charger connected once but stopped responding — a hardware/power-cycle issue, not a network-check failure like COMMFAIL. Worded and routed differently so the installer knows what to try next."
+    />
+  );
+}
+
+export function CalloutCreateSiteArea() {
+  return (
+    <Callout
+      tone="neutral"
+      label='"No site areas configured" → add one inline'
+      body="Reachable from Site information's empty state. Duplicate names are rejected inline, matching the app's other inline-validation patterns."
     />
   );
 }

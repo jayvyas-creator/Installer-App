@@ -20,13 +20,15 @@ export function EnterTokenIdPage() {
       setError("Enter the token ID from the charger's label.");
       return;
     }
-    setTokenId(token.trim());
+    const trimmedToken = token.trim();
+    setTokenId(trimmedToken);
+    const isMultiSite = trimmedToken.toUpperCase().includes("MULTI");
 
     const processingState: ProcessingState = {
       label: "Validating charger details…",
       sublabel: `Matching token to ${state.chargerId}`,
       durationMs: 1700,
-      next: "/site-information",
+      next: isMultiSite ? "/select-site" : "/site-information",
       failure:
         state.failureMode === "INSTALLFAIL"
           ? {
