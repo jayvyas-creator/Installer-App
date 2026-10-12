@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import styles from "./IconButton.module.css";
 
 export interface IconButtonProps
@@ -6,12 +6,14 @@ export interface IconButtonProps
   "aria-label": string;
   tone?: "default" | "subtle" | "onBrand";
   children: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export function IconButton({
   tone = "default",
   className,
   children,
+  ref,
   ...rest
 }: IconButtonProps) {
   const toneClass =
@@ -19,6 +21,7 @@ export function IconButton({
 
   return (
     <button
+      ref={ref}
       className={[styles.iconButton, toneClass, className ?? ""]
         .filter(Boolean)
         .join(" ")}
