@@ -4,7 +4,7 @@ import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
 import { Select } from "@/components/atoms/Select";
-import { Checkbox } from "@/components/atoms/Checkbox";
+import { ChecklistItem } from "@/components/molecules/ChecklistItem";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { PHASE_LABELS } from "@/constants/electrical";
 import type { Phase, PhaseConfig } from "@/types";
@@ -30,7 +30,7 @@ export function CreateSiteAreaPage({
   initialNameError,
 }: CreateSiteAreaPageProps = {}) {
   const navigate = useNavigate();
-  const { state, addSiteArea, setSelectedSiteArea } = useInstallFlow();
+  const { state, addSiteArea, setSelectedSiteArea, stepOrder } = useInstallFlow();
 
   const [name, setName] = useState(initialName);
   const [voltage, setVoltage] = useState(String(VOLTAGE_OPTIONS[0]));
@@ -81,6 +81,7 @@ export function CreateSiteAreaPage({
     <AppShell
       title="New site area"
       onBack={() => navigate("/site-information")}
+      stepper={{ steps: [...stepOrder], currentIndex: 2 }}
       footer={
         <Button type="submit" form="create-site-area-form" fullWidth size="lg">
           Save site area
@@ -128,12 +129,16 @@ export function CreateSiteAreaPage({
 
         <div className={formStyles.section}>
           <span className={formStyles.sectionTitle}>Available phases</span>
-          {PHASES_FOR_CONFIG[phaseConfig].map((phase) => (
-            <label key={phase} className={formStyles.summaryRow} style={{ cursor: "pointer" }}>
-              <span className={formStyles.summaryText}>{PHASE_LABELS[phase]}</span>
-              <Checkbox checked={availablePhases.includes(phase)} onChange={() => togglePhase(phase)} />
-            </label>
-          ))}
+          <div className={formStyles.list}>
+            {PHASES_FOR_CONFIG[phaseConfig].map((phase) => (
+              <ChecklistItem
+                key={phase}
+                label={PHASE_LABELS[phase]}
+                checked={availablePhases.includes(phase)}
+                onToggle={() => togglePhase(phase)}
+              />
+            ))}
+          </div>
         </div>
       </form>
     </AppShell>

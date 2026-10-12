@@ -1,16 +1,31 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { Check, Loader2, X } from "lucide-react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
+import { StatusPill, type StatusTone } from "@/components/atoms/StatusPill";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { DEFAULT_OCPP_STEPS } from "@/constants/mockData";
-import type { OcppStep } from "@/types";
+import type { OcppStep, OcppStepStatus } from "@/types";
 import formStyles from "./shared/form.module.css";
 import styles from "./AutomatedOcppTestingPage.module.css";
 
 const STEP_DURATION = 650;
+
+const STEP_STATUS_LABEL: Record<OcppStepStatus, string> = {
+  pending: "Pending",
+  running: "Running",
+  passed: "Passed",
+  failed: "Failed",
+};
+
+const STEP_STATUS_TONE: Record<OcppStepStatus, StatusTone> = {
+  pending: "neutral",
+  running: "brand",
+  passed: "success",
+  failed: "error",
+};
 
 export function AutomatedOcppTestingPage() {
   const navigate = useNavigate();
@@ -78,8 +93,9 @@ export function AutomatedOcppTestingPage() {
               className={styles.stepRow}
               data-status={step.status}
               layout
+              transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
             >
-              <span className={styles.iconSlot}>
+              <span className={styles.iconSlot} aria-hidden="true">
                 {step.status === "pending" && <span className={styles.pendingDot} />}
                 {step.status === "running" && (
                   <Loader2 size={18} className="spin" color="var(--color-brand-orange-500)" />
@@ -88,6 +104,9 @@ export function AutomatedOcppTestingPage() {
                 {step.status === "failed" && <X size={18} color="var(--color-error-600)" />}
               </span>
               <span className={styles.stepLabel}>{step.label}</span>
+              <StatusPill tone={STEP_STATUS_TONE[step.status]}>
+                {STEP_STATUS_LABEL[step.status]}
+              </StatusPill>
             </motion.div>
           ))}
         </div>

@@ -19,7 +19,7 @@ export function ReadyToChargePage() {
         <OutcomePanel
           tone="success"
           title="Ready to charge"
-          description={`${state.chargerId} is already commissioned and live. No further setup is needed — it's ready for drivers to use.`}
+          description={`${state.chargerId} is already commissioned and live. No further setup is needed, it's ready for drivers to use.`}
           primaryAction={{ label: "Return home", onClick: handleReturnHome }}
         />
       </div>

@@ -100,6 +100,11 @@
   --border-subtle: var(--color-neutral-200);
   --border-default: var(--color-neutral-300);
   --border-strong: var(--color-neutral-400);
+  /* Dedicated field-border tone: --border-default (~2:1 on white) reads fine
+     as a dividers/subtle-boundary color but fails WCAG 1.4.11 (3:1) as the
+     sole boundary indicator on every text input/select. Form controls use
+     this instead. */
+  --border-field: var(--color-neutral-500);
   --border-focus: var(--color-brand-orange-500);
   --border-error: var(--color-error-600);
   --border-success: var(--color-success-600);
@@ -186,6 +191,9 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-decel: cubic-bezier(0, 0, 0.2, 1);
   --ease-accel: cubic-bezier(0.4, 0, 1, 1);
+  /* Confident, decisive deceleration for step/route transitions and sheet
+     entrances — reads less "material-default", more premium-native. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ======================= Proposed: misc =========================== */
   --touch-target-min: 44px;

@@ -1,9 +1,12 @@
-import { AnimatePresence } from "framer-motion";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { AnimatePresence } from "motion/react";
+import { useState } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PageTransition } from "@/components/PageTransition";
 import { InstallFlowProvider } from "@/state/InstallFlowContext";
 import { SplashPage } from "@/pages/SplashPage";
 import { HomePage } from "@/pages/HomePage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 import { NoEvChargerFoundPage } from "@/pages/NoEvChargerFoundPage";
 import { ValidateChargerDetailsPage } from "@/pages/ValidateChargerDetailsPage";
 import { InstallerInformationPage } from "@/pages/InstallerInformationPage";
@@ -22,14 +25,47 @@ import { ReadyToBeCommissionedPage } from "@/pages/ReadyToBeCommissionedPage";
 import { ReadyToChargePage } from "@/pages/ReadyToChargePage";
 import { HelpPage } from "@/pages/HelpPage";
 
+// Set once a standalone-launch splash has been shown, so it only plays once
+// per browser session (not on every back-navigation to "/").
+const SPLASH_SHOWN_KEY = "dynachrg-splash-shown";
+
+function shouldShowStandaloneSplash(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  const isStandaloneLaunch = window.matchMedia("(display-mode: standalone)").matches;
+  if (!isStandaloneLaunch) {
+    return false;
+  }
+  if (window.sessionStorage.getItem(SPLASH_SHOWN_KEY)) {
+    return false;
+  }
+  window.sessionStorage.setItem(SPLASH_SHOWN_KEY, "1");
+  return true;
+}
+
+// Root route gate: on a standalone (installed PWA) cold launch, hands off to
+// the splash screen first; otherwise renders Home directly. The check runs
+// once per mount via the lazy useState initializer, so a regular browser
+// visit never renders an extra frame for it.
+function RootRoute() {
+  const [showSplash] = useState(shouldShowStandaloneSplash);
+
+  if (showSplash) {
+    return <Navigate to="/splash" replace />;
+  }
+
+  return <HomePage />;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
-        <Route path="/splash" element={<PageTransition><SplashPage /></PageTransition>} />
-        <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+        <Route path="/splash" element={<PageTransition ease="expo"><SplashPage /></PageTransition>} />
+        <Route path="/" element={<PageTransition><RootRoute /></PageTransition>} />
         <Route path="/no-charger-found" element={<PageTransition><NoEvChargerFoundPage /></PageTransition>} />
         <Route path="/validate-charger-details" element={<PageTransition><ValidateChargerDetailsPage /></PageTransition>} />
         <Route path="/installer-info" element={<PageTransition><InstallerInformationPage /></PageTransition>} />
@@ -47,6 +83,7 @@ function AnimatedRoutes() {
         <Route path="/ready-to-be-commissioned" element={<PageTransition><ReadyToBeCommissionedPage /></PageTransition>} />
         <Route path="/ready-to-charge" element={<PageTransition><ReadyToChargePage /></PageTransition>} />
         <Route path="/help" element={<PageTransition><HelpPage /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
       </Routes>
     </AnimatePresence>
   );
@@ -55,7 +92,15 @@ function AnimatedRoutes() {
 function App() {
   return (
     <InstallFlowProvider>
-      <AnimatedRoutes />
+      {/* Placed inside InstallFlowProvider, wrapping only the route tree:
+          a render error is almost always one page's problem, not the
+          install-flow state itself. "Try again" only remounts the routes,
+          so an in-progress install survives a recovered error instead of
+          being wiped the way a boundary placed above the provider would
+          wipe it. */}
+      <ErrorBoundary>
+        <AnimatedRoutes />
+      </ErrorBoundary>
     </InstallFlowProvider>
   );
 }

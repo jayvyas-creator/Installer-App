@@ -36,7 +36,7 @@ export function buildMockChargerDetails(chargerId: string): ChargerDetails {
   return {
     chargerId: chargerId.trim().toUpperCase(),
     model: "DynaChrg DC-50",
-    serialNumber: `SN-${chargerId.trim().toUpperCase().slice(-6).padStart(6, "0")}`,
+    serialNumber: `SN-${chargerId.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(-6).padStart(6, "0")}`,
     manufacturer: "DynaChrg Energy Systems",
   };
 }

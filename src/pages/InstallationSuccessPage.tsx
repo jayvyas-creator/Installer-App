@@ -9,7 +9,7 @@ export function InstallationSuccessPage() {
   const { state } = useInstallFlow();
 
   return (
-    <AppShell title="Installation recorded" backDisabled>
+    <AppShell title="Installation summary" backDisabled>
       <div className={styles.wrap}>
         <OutcomePanel
           tone="success"

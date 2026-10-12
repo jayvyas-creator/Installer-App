@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
 import { StatusPill } from "@/components/atoms/StatusPill";
-import { Toast } from "@/components/molecules/Toast";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import styles from "./ProcessingPage.module.css";
 import formStyles from "./shared/form.module.css";
@@ -11,16 +11,15 @@ import formStyles from "./shared/form.module.css";
 export function ReadyToBeCommissionedPage() {
   const navigate = useNavigate();
   const { state, reset } = useInstallFlow();
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
-    const showTimer = window.setTimeout(() => setShowToast(true), 500);
-    const hideTimer = window.setTimeout(() => setShowToast(false), 4200);
-    return () => {
-      window.clearTimeout(showTimer);
-      window.clearTimeout(hideTimer);
-    };
-  }, []);
+    const showTimer = window.setTimeout(() => {
+      toast(`${state.chargerId} commissioning complete. Charger is now live.`, {
+        duration: 3700,
+      });
+    }, 500);
+    return () => window.clearTimeout(showTimer);
+  }, [state.chargerId]);
 
   function handleDone() {
     reset();
@@ -48,7 +47,6 @@ export function ReadyToBeCommissionedPage() {
           </div>
         </OutcomePanel>
       </div>
-      <Toast open={showToast} message={`${state.chargerId} commissioning complete — charger is now live.`} />
     </AppShell>
   );
 }

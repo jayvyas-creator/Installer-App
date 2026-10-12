@@ -1,10 +1,10 @@
 import { ChevronLeft, Headphones } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { Toaster, toast } from "sonner";
 import { IconButton } from "@/components/atoms/IconButton";
 import { Stepper, type StepperProps } from "@/components/molecules/Stepper";
 import { ErrorBanner } from "@/components/molecules/ErrorBanner";
-import { Toast } from "@/components/molecules/Toast";
 import styles from "./AppShell.module.css";
 
 export interface AppShellProps {
@@ -30,7 +30,6 @@ export function AppShell({
   const [isOffline, setIsOffline] = useState(
     () => typeof navigator !== "undefined" && !navigator.onLine,
   );
-  const [showBackOnline, setShowBackOnline] = useState(false);
 
   useEffect(() => {
     function handleOffline() {
@@ -38,8 +37,7 @@ export function AppShell({
     }
     function handleOnline() {
       setIsOffline(false);
-      setShowBackOnline(true);
-      window.setTimeout(() => setShowBackOnline(false), 3200);
+      toast("Back online.");
     }
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
@@ -96,7 +94,12 @@ export function AppShell({
           <div className={styles.footerInner}>{footer}</div>
         </div>
       )}
-      <Toast open={showBackOnline} message="Back online." />
+      <Toaster
+        position="top-center"
+        offset={{ top: "calc(3.5rem + var(--space-3))" }}
+        className={styles.toaster}
+        toastOptions={{ classNames: { toast: styles.toast } }}
+      />
     </div>
   );
 }

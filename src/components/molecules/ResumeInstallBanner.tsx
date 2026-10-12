@@ -2,7 +2,7 @@ import { History } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
 import styles from "./ResumeInstallBanner.module.css";
 
-/** Canvas: tempo/designs/canvases/dynachrg-flow — storyboard "HomeWithDraft". */
+/** Canvas: tempo/designs/canvases/dynachrg-flow, storyboard "HomeWithDraft". */
 export interface ResumeInstallBannerProps {
   chargerId: string;
   installerName: string;
@@ -24,7 +24,8 @@ export function ResumeInstallBanner({
       <div className={styles.texts}>
         <span className={styles.title}>Resume install in progress</span>
         <span className={styles.description}>
-          {chargerId} — started by {installerName}. Pick up where you left off, or start over.
+          {chargerId}, started by {installerName}. Pick up where you left off, or dismiss this
+          draft and start a new install.
         </span>
       </div>
       <div className={styles.actions}>

@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Drawer } from "vaul";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { QrCode, X } from "lucide-react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
 import { IconButton } from "@/components/atoms/IconButton";
-import { Toast } from "@/components/molecules/Toast";
 import { ResumeInstallBanner } from "@/components/molecules/ResumeInstallBanner";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { buildMockChargerDetails, resolveFailureMode } from "@/constants/mockData";
@@ -32,21 +33,11 @@ export function HomePage() {
   const [error, setError] = useState<string | undefined>();
   const [scanning, setScanning] = useState(false);
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
-  const [showToast, setShowToast] = useState(false);
 
   const hasDraft =
     Boolean(state.chargerId) &&
     Boolean(state.installerInfo.fullName) &&
     state.failureMode !== "ACTIVE";
-
-  useEffect(() => {
-    if (!showPermissionSheet) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setShowPermissionSheet(false);
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showPermissionSheet]);
 
   function proceedWithId(id: string) {
     const trimmed = id.trim();
@@ -86,8 +77,7 @@ export function HomePage() {
 
   function handleDenyCamera() {
     setShowPermissionSheet(false);
-    setShowToast(true);
-    window.setTimeout(() => setShowToast(false), 3200);
+    toast("Please allow camera access to proceed further.");
   }
 
   function finishScan() {
@@ -144,39 +134,27 @@ export function HomePage() {
         </form>
       </div>
 
-      <AnimatePresence>
-        {showPermissionSheet && (
-          <motion.div
-            className={styles.permissionSheet}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowPermissionSheet(false)}
-          >
-            <motion.div
-              className={styles.permissionCard}
-              initial={{ y: 48 }}
-              animate={{ y: 0 }}
-              exit={{ y: 48 }}
-              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span className={styles.permissionTitle}>Allow camera access?</span>
-              <span className={styles.permissionBody}>
-                DynaChrg Installer needs your camera to scan the charger's QR code.
-              </span>
-              <div className={styles.permissionActions}>
-                <Button fullWidth onClick={handleAllowCamera}>
-                  Allow
-                </Button>
-                <Button fullWidth variant="ghost" onClick={handleDenyCamera}>
-                  Don't Allow
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Drawer.Root open={showPermissionSheet} onOpenChange={setShowPermissionSheet}>
+        <Drawer.Portal>
+          <Drawer.Overlay className={styles.permissionOverlay} />
+          <Drawer.Content className={styles.permissionCard}>
+            <Drawer.Title className={styles.permissionTitle}>
+              Allow camera access?
+            </Drawer.Title>
+            <Drawer.Description className={styles.permissionBody}>
+              DynaChrg Installer needs your camera to scan the charger's QR code.
+            </Drawer.Description>
+            <div className={styles.permissionActions}>
+              <Button fullWidth onClick={handleAllowCamera}>
+                Allow
+              </Button>
+              <Button fullWidth variant="ghost" onClick={handleDenyCamera}>
+                Don't Allow
+              </Button>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
       <AnimatePresence>
         {scanning && (
@@ -213,8 +191,6 @@ export function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <Toast open={showToast} message="Please allow camera access to proceed further." />
     </AppShell>
   );
 }

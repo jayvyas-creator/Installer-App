@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPinOff, Plus } from "lucide-react";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { useInstallFlow } from "@/state/InstallFlowContext";
@@ -57,7 +58,9 @@ export function SiteInformationPage() {
     >
       <div className={formStyles.stack}>
         <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Which site area is this?</h1>
+          <h1 id="site-area-heading" className={formStyles.heading}>
+            Which site area is this?
+          </h1>
           <p className={formStyles.subheading}>
             {site
               ? `Pick the area within ${site.name} where this charger lives.`
@@ -85,28 +88,33 @@ export function SiteInformationPage() {
           <div className={formStyles.list}>
             {visibleAreas.length === 1 && (
               <span className={siteCardStyles.note}>
-                Only one site area is available for this location — it's been selected for you.
+                Only one site area is available for this location. It's been selected for you.
               </span>
             )}
-            {visibleAreas.map((area) => (
-              <button
-                type="button"
-                key={area.id}
-                className={siteCardStyles.card}
-                data-selected={selected === area.id}
-                onClick={() => setSelected(area.id)}
-              >
-                <span className={siteCardStyles.cardTexts}>
-                  <span className={siteCardStyles.cardName}>{area.name}</span>
-                  <span className={siteCardStyles.cardMeta}>
-                    {area.voltage}V · {PHASE_CONFIG_LABELS[area.phaseConfig]}
-                  </span>
-                </span>
-                <span className={siteCardStyles.radio}>
-                  <span className={siteCardStyles.radioDot} />
-                </span>
-              </button>
-            ))}
+            <RadioGroup.Root
+              className={formStyles.list}
+              aria-labelledby="site-area-heading"
+              value={selected ?? undefined}
+              onValueChange={setSelected}
+            >
+              {visibleAreas.map((area) => (
+                <RadioGroup.Item key={area.id} value={area.id} asChild>
+                  <button type="button" className={siteCardStyles.card}>
+                    <span className={siteCardStyles.cardTexts}>
+                      <span className={siteCardStyles.cardName}>{area.name}</span>
+                      <span className={siteCardStyles.cardMeta}>
+                        {area.voltage}V · {PHASE_CONFIG_LABELS[area.phaseConfig]}
+                      </span>
+                    </span>
+                    <span className={siteCardStyles.radio}>
+                      <RadioGroup.Indicator forceMount asChild>
+                        <span className={siteCardStyles.radioDot} />
+                      </RadioGroup.Indicator>
+                    </span>
+                  </button>
+                </RadioGroup.Item>
+              ))}
+            </RadioGroup.Root>
             <button
               type="button"
               className={styles.addAreaRow}

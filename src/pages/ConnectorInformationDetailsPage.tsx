@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/organisms/AppShell";
@@ -20,6 +20,7 @@ export function ConnectorInformationDetailsPage() {
   const [connectors, setLocalConnectors] = useState<ConnectorConfig[]>(state.connectors);
   const [currentType, setCurrentType] = useState<ConnectorCurrentType>("AC");
   const [phase, setPhase] = useState<Phase>(electrical?.assignedPhases[0] ?? "L1");
+  const nextConnectorId = useRef(0);
 
   if (!electrical) {
     navigate("/charger-electrical", { replace: true });
@@ -28,7 +29,7 @@ export function ConnectorInformationDetailsPage() {
 
   function addConnector() {
     const next: ConnectorConfig = {
-      id: `conn-${Date.now()}`,
+      id: `conn-${nextConnectorId.current++}`,
       label: `Connector ${connectors.length + 1}`,
       currentType,
       phaseConfig: electrical!.phaseConfig,

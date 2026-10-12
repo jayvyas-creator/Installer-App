@@ -11,7 +11,7 @@ import styles from "./ValidateChargerDetailsPage.module.css";
 
 export function ValidateChargerDetailsPage() {
   const navigate = useNavigate();
-  const { state } = useInstallFlow();
+  const { state, stepOrder } = useInstallFlow();
   const details = state.chargerDetails;
   const connectors = buildMockDetectedConnectors(state.chargerId);
 
@@ -23,6 +23,7 @@ export function ValidateChargerDetailsPage() {
     <AppShell
       title="Validate charger details"
       onBack={() => navigate("/")}
+      stepper={{ steps: [...stepOrder], currentIndex: 0 }}
       footer={
         <Button fullWidth size="lg" onClick={handleConfirm}>
           Confirm and continue
@@ -41,9 +42,12 @@ export function ValidateChargerDetailsPage() {
         <div className={formStyles.section}>
           <span className={formStyles.sectionTitle}>Charger record</span>
           <ReadOnlyField label="Charger ID" value={details?.chargerId ?? state.chargerId} />
-          <ReadOnlyField label="Model" value={details?.model ?? "—"} />
-          <ReadOnlyField label="Serial number" value={details?.serialNumber ?? "—"} />
-          <ReadOnlyField label="Manufacturer" value={details?.manufacturer ?? "—"} />
+          <ReadOnlyField label="Model" value={details?.model ?? "Not available"} />
+          <ReadOnlyField label="Serial number" value={details?.serialNumber ?? "Not available"} />
+          <ReadOnlyField
+            label="Manufacturer"
+            value={details?.manufacturer ?? "Not available"}
+          />
         </div>
 
         <div className={formStyles.section}>

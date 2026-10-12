@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Select } from "@/components/atoms/Select";
-import { Checkbox } from "@/components/atoms/Checkbox";
+import { ChecklistItem } from "@/components/molecules/ChecklistItem";
 import { ReadOnlyField } from "@/components/molecules/ReadOnlyField";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import {
@@ -75,12 +75,16 @@ export function ChargerElectricalInformationPage() {
 
         <div className={formStyles.section}>
           <span className={formStyles.sectionTitle}>Assigned phases</span>
-          {siteArea.availablePhases.map((phase) => (
-            <label key={phase} className={formStyles.summaryRow} style={{ cursor: "pointer" }}>
-              <span className={formStyles.summaryText}>{PHASE_LABELS[phase]}</span>
-              <Checkbox checked={assignedPhases.includes(phase)} onChange={() => togglePhase(phase)} />
-            </label>
-          ))}
+          <div className={formStyles.list}>
+            {siteArea.availablePhases.map((phase) => (
+              <ChecklistItem
+                key={phase}
+                label={PHASE_LABELS[phase]}
+                checked={assignedPhases.includes(phase)}
+                onToggle={() => togglePhase(phase)}
+              />
+            ))}
+          </div>
         </div>
 
         <Select

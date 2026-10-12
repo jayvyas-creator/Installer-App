@@ -15,7 +15,7 @@
     background var(--duration-fast) var(--ease-standard);
 }
 
-.card[data-selected="true"] {
+.card[data-state="checked"] {
   border-color: var(--color-brand-orange-500);
   background: var(--surface-brand-subtle);
 }
@@ -48,7 +48,7 @@
   justify-content: center;
 }
 
-.card[data-selected="true"] .radio {
+.card[data-state="checked"] .radio {
   border-color: var(--color-brand-orange-500);
 }
 
@@ -61,7 +61,7 @@
   transition: transform var(--duration-fast) var(--ease-decel);
 }
 
-.card[data-selected="true"] .radioDot {
+.radioDot[data-state="checked"] {
   transform: scale(1);
 }
 

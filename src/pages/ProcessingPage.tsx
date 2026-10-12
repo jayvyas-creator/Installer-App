@@ -52,6 +52,7 @@ export function ProcessingPage() {
       <div className={styles.wrap}>
         {!failed ? (
           <>
+            <h1 className="sr-only">{state.label}</h1>
             <ProgressRing size={64} tone="brand" />
             <div>
               <p className={styles.label}>{state.label}</p>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { useInstallFlow } from "@/state/InstallFlowContext";
@@ -31,31 +32,36 @@ export function SelectSitePage() {
     >
       <div className={formStyles.stack}>
         <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>This token covers multiple sites</h1>
+          <h1 id="select-site-heading" className={formStyles.heading}>
+            This token covers multiple sites
+          </h1>
           <p className={formStyles.subheading}>
             Choose which site {state.chargerId || "this charger"} is being installed at.
           </p>
         </div>
 
-        <div className={formStyles.list}>
+        <RadioGroup.Root
+          className={formStyles.list}
+          aria-labelledby="select-site-heading"
+          value={selected ?? undefined}
+          onValueChange={setSelected}
+        >
           {MOCK_SITES.map((candidateSite) => (
-            <button
-              type="button"
-              key={candidateSite.id}
-              className={siteCardStyles.card}
-              data-selected={selected === candidateSite.id}
-              onClick={() => setSelected(candidateSite.id)}
-            >
-              <span className={siteCardStyles.cardTexts}>
-                <span className={siteCardStyles.cardName}>{candidateSite.name}</span>
-                <span className={siteCardStyles.cardMeta}>{candidateSite.address}</span>
-              </span>
-              <span className={siteCardStyles.radio}>
-                <span className={siteCardStyles.radioDot} />
-              </span>
-            </button>
+            <RadioGroup.Item key={candidateSite.id} value={candidateSite.id} asChild>
+              <button type="button" className={siteCardStyles.card}>
+                <span className={siteCardStyles.cardTexts}>
+                  <span className={siteCardStyles.cardName}>{candidateSite.name}</span>
+                  <span className={siteCardStyles.cardMeta}>{candidateSite.address}</span>
+                </span>
+                <span className={siteCardStyles.radio}>
+                  <RadioGroup.Indicator forceMount asChild>
+                    <span className={siteCardStyles.radioDot} />
+                  </RadioGroup.Indicator>
+                </span>
+              </button>
+            </RadioGroup.Item>
           ))}
-        </div>
+        </RadioGroup.Root>
       </div>
     </AppShell>
   );

@@ -86,3 +86,21 @@
   width: 100%;
   max-width: var(--content-max-width);
 }
+
+/* Sonner sets its default theme vars via `[data-sonner-toaster][data-sonner-theme='light']`
+   (two attribute selectors) — match that specificity so this override wins regardless of
+   stylesheet load order, instead of relying on source order or !important. */
+[data-sonner-toaster][data-sonner-theme="light"].toaster {
+  --normal-bg: var(--surface-card);
+  --normal-text: var(--text-primary);
+  --normal-border: var(--border-subtle);
+  --border-radius: var(--radius-md);
+}
+
+[data-sonner-toaster].toaster {
+  font-family: var(--font-family-base);
+}
+
+[data-sonner-toast][data-styled="true"].toast {
+  box-shadow: var(--shadow-lg);
+}

@@ -10,12 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "framer-motion": "^14.1.0",
+    "@radix-ui/react-radio-group": "^1.5.0",
     "lucide-react": "^1.54.0",
+    "motion": "^14.1.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
-    "tempo-sdk": "^0.0.52"
+    "sonner": "^2.0.8",
+    "tempo-sdk": "^0.0.52",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
