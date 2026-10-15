@@ -1,77 +1,178 @@
-import { useNavigate } from "react-router-dom";
-import { Plug } from "lucide-react";
-import { AppShell } from "@/components/organisms/AppShell";
+import { useCallback, useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
-import { StatusPill } from "@/components/atoms/StatusPill";
+import { Heading } from "@/components/atoms/Heading";
+import { ErrorBanner } from "@/components/molecules/ErrorBanner";
 import { ReadOnlyField } from "@/components/molecules/ReadOnlyField";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import { buildMockDetectedConnectors } from "@/constants/mockData";
+import { useHistorySync } from "@/navigation/useHistorySync";
+import { getChargerByToken } from "@/api/endpoints";
+import { mapChargerLookupToDetails } from "@/api/mappers";
+import { validateChargerFlow } from "@/flows/commissioningFlow";
+import { FLOW_STEPS } from "@/constants/flowSteps";
+import type { ChargerDetails } from "@/types";
 import formStyles from "./shared/form.module.css";
 import styles from "./ValidateChargerDetailsPage.module.css";
 
-export function ValidateChargerDetailsPage() {
-  const navigate = useNavigate();
-  const { state, stepOrder } = useInstallFlow();
-  const details = state.chargerDetails;
-  const connectors = buildMockDetectedConnectors(state.chargerId);
+// A 3-state subset of RequestState<T> (src/types/api.ts): this page always
+// starts loading on mount, so the "idle" member would be unreachable dead
+// code every branch below would still have to account for.
+type LoadState =
+  | { status: "loading" }
+  | { status: "success"; data: ChargerDetails }
+  | { status: "error"; error: string };
 
-  function handleConfirm() {
-    navigate("/installer-info");
+// DESIGN-HANDOFF.md §2.4: this screen independently re-fetches the charger
+// record (CLAUDE.md endpoint 2 lists both `ValidateCharger.js` and
+// `tokenId.js` as callers), rather than only trusting whatever Enter Token
+// ID already put in the session — a refresh or a resumed session should
+// still show the current backend record, not stale local state.
+export function ValidateChargerDetailsPage() {
+  const navigate = useHistorySync();
+  const { session, setChargerDetails, markRegistered, reset } = useInstallFlow();
+
+  const [loadState, setLoadState] = useState<LoadState>({ status: "loading" });
+  const [confirming, setConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+
+  // The session is missing what this screen needs to even attempt the
+  // lookup (established earlier, on Installer Information / Enter Token ID).
+  const hasSessionData = Boolean(session.chargerId && session.tenantId && session.siteId);
+
+  const loadDetails = useCallback(async () => {
+    if (!hasSessionData) return;
+    setLoadState({ status: "loading" });
+    const result = await getChargerByToken(
+      session.chargerId,
+      session.tenantId ?? "",
+      session.siteId ?? "",
+      session.installerToken ?? "",
+    );
+    if (!result.ok) {
+      setLoadState({ status: "error", error: result.error });
+      return;
+    }
+    const details = mapChargerLookupToDetails(result.data);
+    setChargerDetails(details, result.data.site.siteAreas);
+    setLoadState({ status: "success", data: details });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSessionData, session.chargerId, session.tenantId, session.siteId, session.installerToken]);
+
+  useEffect(() => {
+    if (hasSessionData) loadDetails();
+    // Only ever run again if the identity of the request itself changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasSessionData, session.chargerId, session.tenantId, session.siteId]);
+
+  function handleCancel() {
+    reset();
+    navigate("/");
   }
 
+  async function handleConfirm() {
+    setConfirming(true);
+    setConfirmError(null);
+    const result = await validateChargerFlow(
+      session.chargerId,
+      session.installerToken ?? "",
+      session.siteAreas.length,
+    );
+    if (!result.ok) {
+      setConfirmError(result.error);
+      setConfirming(false);
+      return;
+    }
+    markRegistered();
+    navigate(result.data);
+  }
+
+  if (!hasSessionData) {
+    return (
+      <AppLayout
+        title="Validate Charger Details"
+        stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}
+        footer={<Button fullWidth onClick={handleCancel}>Cancel</Button>}
+      >
+        <ErrorBanner
+          title="Your session is missing the installer details. Please cancel and start again."
+        />
+      </AppLayout>
+    );
+  }
+
+  if (loadState.status === "loading") {
+    return (
+      <AppLayout title="Validate Charger Details" stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}>
+        <p className={styles.loadingRow} role="status">
+          <Loader2 className="spin" size={20} aria-hidden />
+          Loading charger details…
+        </p>
+      </AppLayout>
+    );
+  }
+
+  if (loadState.status === "error") {
+    return (
+      <AppLayout
+        title="Validate Charger Details"
+        stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}
+        footer={
+          <div className={styles.footerRow}>
+            <Button variant="secondary" fullWidth onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button fullWidth onClick={loadDetails}>
+              Retry
+            </Button>
+          </div>
+        }
+      >
+        <ErrorBanner title={loadState.error || "Could not load charger details. Please try again."} />
+      </AppLayout>
+    );
+  }
+
+  const details = loadState.data;
+  const connectorLabel = (index: number) =>
+    details.connectorTypes.length > 1 ? `Connector ${index + 1} Type` : "Connector Type";
+
   return (
-    <AppShell
-      title="Validate charger details"
-      onBack={() => navigate("/")}
-      stepper={{ steps: [...stepOrder], currentIndex: 0 }}
+    <AppLayout
+      title="Validate Charger Details"
+      stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}
       footer={
-        <Button fullWidth size="lg" onClick={handleConfirm}>
-          Confirm and continue
-        </Button>
+        <div className={styles.footerRow}>
+          <Button variant="secondary" fullWidth disabled={confirming} onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button fullWidth loading={confirming} onClick={handleConfirm}>
+            {confirming ? "Confirming…" : "Confirm"}
+          </Button>
+        </div>
       }
     >
       <div className={formStyles.stack}>
-        <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Is this the right charger?</h1>
-          <p className={formStyles.subheading}>
-            We matched this charger ID to the record below. Confirm the details before starting
-            the install.
-          </p>
-        </div>
+        <Heading level={1}>Validate Charger Details</Heading>
 
         <div className={formStyles.section}>
-          <span className={formStyles.sectionTitle}>Charger record</span>
-          <ReadOnlyField label="Charger ID" value={details?.chargerId ?? state.chargerId} />
-          <ReadOnlyField label="Model" value={details?.model ?? "Not available"} />
-          <ReadOnlyField label="Serial number" value={details?.serialNumber ?? "Not available"} />
-          <ReadOnlyField
-            label="Manufacturer"
-            value={details?.manufacturer ?? "Not available"}
-          />
+          <ReadOnlyField label="Charger ID" value={details.chargerId} />
+          <ReadOnlyField label="QR Code URL" value={details.qrCodeUrl} />
+          <ReadOnlyField label="Serial Number" value={details.serialNumber} />
+          {details.connectorTypes.map((connectorType, index) => (
+            <ReadOnlyField key={index} label={connectorLabel(index)} value={connectorType} />
+          ))}
+          <ReadOnlyField label="No. of Connectors" value={String(details.noOfConnectors)} />
         </div>
 
-        <div className={formStyles.section}>
-          <span className={formStyles.sectionTitle}>
-            {connectors.length > 1 ? `${connectors.length} connectors detected` : "Connector detected"}
-          </span>
-          <div className={formStyles.list}>
-            {connectors.map((connector) => (
-              <div key={connector.id} className={styles.connectorRow}>
-                <span className={styles.connectorIcon} aria-hidden>
-                  <Plug size={18} />
-                </span>
-                <span className={styles.connectorTexts}>
-                  <span className={styles.connectorLabel}>{connector.label}</span>
-                  <span className={styles.connectorMeta}>{connector.currentType} connector</span>
-                </span>
-                <StatusPill tone={connector.status === "ready" ? "success" : "error"}>
-                  {connector.status === "ready" ? "Ready" : "Needs attention"}
-                </StatusPill>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ErrorBanner
+          tone="warning"
+          title="Do not proceed if info is incorrect"
+          description="If any information is invalid or doesn't match, please contact your CPO for further instructions."
+        />
+
+        {confirmError && <ErrorBanner title={confirmError} />}
       </div>
-    </AppShell>
+    </AppLayout>
   );
 }

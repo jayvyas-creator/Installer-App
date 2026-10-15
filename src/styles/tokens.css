@@ -33,8 +33,14 @@
 
   --color-disabled-overlay: rgba(0, 0, 0, 0.38);
 
+  /* Verified against the PayG Installer App source directly (DESIGN-HANDOFF.md
+     §1): SF Pro is the body/control font everywhere; Lato is reserved for the
+     Heading atom only, via --font-family-heading. An earlier pass had these
+     swapped (Lato as the base face) — that was sourced from the wrong repo. */
   --font-family-base:
-    "Lato", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family-heading: "Lato", "SF Pro Display", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   --duration-standard-max: 1000ms;
@@ -207,4 +213,24 @@
   --z-stepper: 110;
   --z-overlay: 200;
   --z-toast: 300;
+
+  /* ============ Doc-compatibility aliases (DESIGN-HANDOFF.md §1) ==== */
+  /* The names a developer coming from DESIGN-HANDOFF.md/CLAUDE.md will grep
+     for first. These point at the same confirmed values above rather than
+     replacing the richer scale this file already uses — the scale is real,
+     reviewed design work and swapping every component's variable names for
+     this pass would be pure churn with no effect on wiring up the backend. */
+  --color-primary: var(--color-brand-orange-500);
+  --color-success: var(--color-success-600);
+  --color-disabled: var(--color-disabled-overlay);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-secondary);
+  --color-border: var(--border-default);
+  --color-surface: var(--surface-card);
+  --color-background: var(--surface-sunken);
+  --shadow-surface: var(--shadow-sm);
+  --size-touch-target: var(--touch-target-min);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --transition-standard: var(--duration-standard-max);
 }

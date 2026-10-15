@@ -11,7 +11,6 @@ import { NoEvChargerFoundPage } from "@/pages/NoEvChargerFoundPage";
 import { ValidateChargerDetailsPage } from "@/pages/ValidateChargerDetailsPage";
 import { InstallerInformationPage } from "@/pages/InstallerInformationPage";
 import { EnterTokenIdPage } from "@/pages/EnterTokenIdPage";
-import { SelectSitePage } from "@/pages/SelectSitePage";
 import { ProcessingPage } from "@/pages/ProcessingPage";
 import { SiteInformationPage } from "@/pages/SiteInformationPage";
 import { CreateSiteAreaPage } from "@/pages/CreateSiteAreaPage";
@@ -73,7 +72,6 @@ function AnimatedRoutes() {
         <Route path="/validate-charger-details" element={<PageTransition><ValidateChargerDetailsPage /></PageTransition>} />
         <Route path="/installer-info" element={<PageTransition><InstallerInformationPage /></PageTransition>} />
         <Route path="/enter-token" element={<PageTransition><EnterTokenIdPage /></PageTransition>} />
-        <Route path="/select-site" element={<PageTransition><SelectSitePage /></PageTransition>} />
         <Route path="/processing" element={<PageTransition><ProcessingPage /></PageTransition>} />
         <Route path="/site-information" element={<PageTransition><SiteInformationPage /></PageTransition>} />
         <Route path="/site-area/new" element={<PageTransition><CreateSiteAreaPage /></PageTransition>} />

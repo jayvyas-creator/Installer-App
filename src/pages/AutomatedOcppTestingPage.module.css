@@ -65,3 +65,33 @@
 .stepRow[data-status="pending"] .stepLabel {
   color: var(--text-secondary);
 }
+
+.checkingMessage {
+  font-size: var(--font-size-body);
+  color: var(--text-secondary);
+  max-width: 24rem;
+}
+
+.hwFailedBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.detailLine {
+  color: var(--text-error);
+  font-weight: 600;
+  margin: 0;
+}
+
+.footerNote {
+  color: var(--text-secondary);
+  font-size: var(--font-size-caption);
+  margin: 0;
+}
+
+.footerNote a {
+  color: var(--text-link);
+  font-weight: 600;
+}

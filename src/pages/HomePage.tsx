@@ -1,70 +1,81 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { Drawer } from "vaul";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { QrCode, X } from "lucide-react";
-import { AppShell } from "@/components/organisms/AppShell";
-import { Button } from "@/components/atoms/Button";
-import { Input } from "@/components/atoms/Input";
+import { ArrowRight, QrCode, X } from "lucide-react";
+import { AppLayout } from "@/components/templates/AppLayout";
 import { IconButton } from "@/components/atoms/IconButton";
+import { Input } from "@/components/atoms/Input";
+import { ErrorBanner } from "@/components/molecules/ErrorBanner";
 import { ResumeInstallBanner } from "@/components/molecules/ResumeInstallBanner";
-import { useInstallFlow } from "@/state/InstallFlowContext";
-import { buildMockChargerDetails, resolveFailureMode } from "@/constants/mockData";
-import type { ProcessingState } from "./ProcessingPage";
+import { useInstallFlow, type InstallSession } from "@/state/InstallFlowContext";
+import { useHistorySync } from "@/navigation/useHistorySync";
+import { resolveRoute } from "@/navigation/resolveRoute";
+import { useQrScanner, type QrScannerError } from "@/hooks/useQrScanner";
 import dynachrgLogo from "@/assets/dynachrg-logo.png";
 import styles from "./HomePage.module.css";
 
+// Dev/mock-mode escape hatch: useQrScanner has no real decoder wired in yet
+// (see its TODO), so this is what "Simulate a successful scan" produces.
 const DEMO_SCANNED_ID = "DC-48213";
 
-function resumeRoute(state: ReturnType<typeof useInstallFlow>["state"]): string {
-  if (state.selectedSiteAreaId) return "/charger-electrical";
-  if (state.tokenId) {
-    return state.tokenId.toUpperCase().includes("MULTI") ? "/select-site" : "/site-information";
+// DESIGN-HANDOFF.md §2.1 "Camera unavailable" copy, keyed by the hook's
+// error states. The doc's table truncates every variant but the first with
+// "…"; completed here the same way the HTTPS variant spells itself out in
+// full ("You can enter the Charger ID below instead.").
+const CAMERA_ERROR_MESSAGES: Record<QrScannerError, string> = {
+  "insecure-context":
+    "The camera only works over HTTPS (or on localhost). You can enter the Charger ID below instead.",
+  "permission-denied":
+    "Camera access was denied. Allow camera access in your browser settings to scan. You can enter the Charger ID below instead.",
+  "no-camera": "No camera was found on this device. You can enter the Charger ID below instead.",
+  "camera-busy":
+    "The camera is being used by another app. Close it and try again. You can enter the Charger ID below instead.",
+  unknown: "The camera couldn't be started in this browser. You can enter the Charger ID below instead.",
+};
+
+// Where "Resume" on the draft banner should land. Status-driven once Enter
+// Token ID has run (resolveRoute, CLAUDE.md §6); otherwise a best guess from
+// how far the session got, since there's no backend answer to route on yet.
+function resumeRoute(session: InstallSession): string {
+  if (session.status) {
+    return resolveRoute(session.status, { siteAreaCount: session.siteAreas.length });
   }
-  if (state.installerInfo.fullName) return "/enter-token";
-  return "/validate-charger-details";
+  if (session.tokenId || session.installerDraft.firstName) return "/enter-token";
+  return "/installer-info";
 }
 
 export function HomePage() {
-  const navigate = useNavigate();
-  const { state, setChargerId, setChargerDetails, reset } = useInstallFlow();
+  const navigate = useHistorySync();
+  const { session, setChargerId, resetForNewChargerId, reset } = useInstallFlow();
   const [chargerId, setChargerIdInput] = useState("");
-  const [error, setError] = useState<string | undefined>();
-  const [scanning, setScanning] = useState(false);
-  const [showPermissionSheet, setShowPermissionSheet] = useState(false);
+  const [fieldError, setFieldError] = useState<string | undefined>();
+  const [scanRequested, setScanRequested] = useState(false);
   const scanTriggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const hasDraft =
-    Boolean(state.chargerId) &&
-    Boolean(state.installerInfo.fullName) &&
-    state.failureMode !== "ACTIVE";
+  const qr = useQrScanner({
+    onResult: (value) => {
+      setScanRequested(false);
+      setChargerIdInput(value);
+      proceedWithId(value);
+    },
+  });
+
+  const hasDraft = Boolean(session.chargerId) && session.status?.status !== "Active";
 
   function proceedWithId(id: string) {
     const trimmed = id.trim();
-    if (!/^DC-/i.test(trimmed)) {
-      setError("Enter a valid charger ID (starts with \"DC-\").");
+    if (!trimmed) {
+      setFieldError("Enter a Charger ID or scan the QR code on the charger.");
       return;
     }
-    setError(undefined);
-    const failureMode = resolveFailureMode(trimmed);
-    setChargerId(trimmed, failureMode);
-    let next = "/validate-charger-details";
-    if (failureMode === "NOTFOUND") {
-      next = "/no-charger-found";
-    } else if (failureMode === "ACTIVE") {
-      next = "/ready-to-charge";
+    setFieldError(undefined);
+    // No API call here (DESIGN-HANDOFF.md §2.1) — a new charger ID clears
+    // everything downstream but keeps the installer's own details.
+    if (trimmed.toUpperCase() === session.chargerId.trim().toUpperCase()) {
+      setChargerId(trimmed);
     } else {
-      setChargerDetails(buildMockChargerDetails(trimmed));
+      resetForNewChargerId(trimmed);
     }
-    const processingState: ProcessingState = {
-      label: "Looking up charger…",
-      sublabel: `Checking records for ${trimmed.toUpperCase()}`,
-      durationMs: 1100,
-      next,
-    };
-    navigate("/processing", { state: processingState });
+    navigate("/installer-info");
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -72,56 +83,56 @@ export function HomePage() {
     proceedWithId(chargerId);
   }
 
-  function handleChargerIdBlur() {
-    const trimmed = chargerId.trim();
-    if (!trimmed) {
-      setError(undefined);
-      return;
-    }
-    setError(/^DC-/i.test(trimmed) ? undefined : "Enter a valid charger ID (starts with \"DC-\").");
+  async function handleScanClick() {
+    setFieldError(undefined);
+    setScanRequested(true);
+    await qr.start();
   }
 
-  function handleAllowCamera() {
-    setShowPermissionSheet(false);
-    setScanning(true);
+  function handleCancelScan() {
+    qr.stop();
+    setScanRequested(false);
   }
 
-  function handleDenyCamera() {
-    setShowPermissionSheet(false);
-    toast("Please allow camera access to proceed further.");
-  }
+  // The hook clears its own `error` at the start of every start() call, so
+  // once it's set here the request has already failed and the overlay
+  // should close itself instead of sitting on a dead camera view.
+  useEffect(() => {
+    if (qr.error) setScanRequested(false);
+  }, [qr.error]);
 
-  function finishScan() {
-    setScanning(false);
-    setChargerIdInput(DEMO_SCANNED_ID);
-    proceedWithId(DEMO_SCANNED_ID);
-  }
+  const showScanner = scanRequested && !qr.error;
 
   useEffect(() => {
-    if (!scanning) return;
+    if (!showScanner) return;
     const trigger = scanTriggerRef.current;
     closeButtonRef.current?.focus();
 
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setScanning(false);
-      }
+      if (e.key === "Escape") handleCancelScan();
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       trigger?.focus();
     };
-  }, [scanning]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showScanner]);
+
+  const cameraMessage = qr.error ? CAMERA_ERROR_MESSAGES[qr.error] : undefined;
+  const bannerMessage = cameraMessage ?? fieldError;
 
   return (
-    <AppShell showHelp>
+    <AppLayout showHelp>
       <div className={styles.wrap}>
         {hasDraft && (
           <ResumeInstallBanner
-            chargerId={state.chargerId}
-            installerName={state.installerInfo.fullName}
-            onResume={() => navigate(resumeRoute(state))}
+            chargerId={session.chargerId}
+            installerName={
+              `${session.installerDraft.firstName} ${session.installerDraft.lastName}`.trim() ||
+              "an installer"
+            }
+            onResume={() => navigate(resumeRoute(session))}
             onDiscard={reset}
           />
         )}
@@ -134,97 +145,117 @@ export function HomePage() {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
-          <button
-            type="button"
-            ref={scanTriggerRef}
-            className={styles.scanTrigger}
-            onClick={() => setShowPermissionSheet(true)}
-          >
-            <QrCode size={20} aria-hidden />
-            Scan QR code
-          </button>
-
-          <div className={styles.divider}>or enter it manually</div>
+          {bannerMessage && <ErrorBanner tone="warning" title={bannerMessage} />}
 
           <Input
             label="Charger ID"
             placeholder="DC-48213"
             value={chargerId}
             onChange={(e) => setChargerIdInput(e.target.value)}
-            onBlur={handleChargerIdBlur}
-            errorText={error}
             autoCapitalize="characters"
             autoCorrect="off"
+            trailingAdornment={
+              <IconButton aria-label="Continue" type="submit" tone="subtle">
+                <ArrowRight size={18} />
+              </IconButton>
+            }
             required
           />
 
-          <Button type="submit" fullWidth size="lg">
-            Continue
-          </Button>
+          <div className={styles.divider}>or enter it manually</div>
+
+          <button
+            type="button"
+            ref={scanTriggerRef}
+            className={styles.scanTrigger}
+            onClick={handleScanClick}
+          >
+            <QrCode size={20} aria-hidden />
+            Scan QR code
+          </button>
         </form>
+
+        <div style={{ textAlign: "center", marginTop: "var(--space-6)" }}>
+          <p style={{ margin: 0, fontSize: "var(--font-size-caption)", color: "var(--text-secondary)" }}>
+            Scan the QR code on the charger you are installing
+          </p>
+          <p
+            style={{
+              margin: "var(--space-1) 0 0",
+              fontSize: "var(--font-size-caption)",
+              color: "var(--text-secondary)",
+              opacity: 0.7,
+            }}
+          >
+            v1.0.0
+          </p>
+        </div>
       </div>
 
-      <Drawer.Root open={showPermissionSheet} onOpenChange={setShowPermissionSheet}>
-        <Drawer.Portal>
-          <Drawer.Overlay className={styles.permissionOverlay} />
-          <Drawer.Content className={styles.permissionCard}>
-            <Drawer.Title className={styles.permissionTitle}>
-              Allow camera access?
-            </Drawer.Title>
-            <Drawer.Description className={styles.permissionBody}>
-              DynaChrg Installer needs your camera to scan the charger's QR code.
-            </Drawer.Description>
-            <div className={styles.permissionActions}>
-              <Button fullWidth onClick={handleAllowCamera}>
-                Allow
-              </Button>
-              <Button fullWidth variant="ghost" onClick={handleDenyCamera}>
-                Don't Allow
-              </Button>
+      {showScanner && (
+        <div
+          className={styles.overlay}
+          role="dialog"
+          aria-modal="true"
+          aria-label="QR code scanner"
+        >
+          <div className={styles.overlayHeader}>
+            <IconButton
+              ref={closeButtonRef}
+              aria-label="Close scanner"
+              tone="onBrand"
+              onClick={handleCancelScan}
+            >
+              <X size={20} />
+            </IconButton>
+          </div>
+          <div className={styles.viewfinderWrap}>
+            <div className={styles.viewfinder}>
+              <video
+                ref={qr.videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "var(--radius-md)",
+                }}
+              />
+              <span className={[styles.corner, styles.cornerTL].join(" ")} />
+              <span className={[styles.corner, styles.cornerTR].join(" ")} />
+              <span className={[styles.corner, styles.cornerBL].join(" ")} />
+              <span className={[styles.corner, styles.cornerBR].join(" ")} />
+              <span className={styles.scanLine} />
             </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
-
-      <AnimatePresence>
-        {scanning && (
-          <motion.div
-            className={styles.overlay}
-            role="dialog"
-            aria-modal="true"
-            aria-label="QR code scanner"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className={styles.overlayHeader}>
-              <IconButton
-                ref={closeButtonRef}
-                aria-label="Close scanner"
-                tone="onBrand"
-                onClick={() => setScanning(false)}
-              >
-                <X size={20} />
-              </IconButton>
-            </div>
-            <div className={styles.viewfinderWrap}>
-              <div className={styles.viewfinder}>
-                <span className={[styles.corner, styles.cornerTL].join(" ")} />
-                <span className={[styles.corner, styles.cornerTR].join(" ")} />
-                <span className={[styles.corner, styles.cornerBL].join(" ")} />
-                <span className={[styles.corner, styles.cornerBR].join(" ")} />
-                <span className={styles.scanLine} />
-              </div>
-            </div>
-            <div className={styles.overlayFooter}>
-              <span className={styles.overlayHint}>Point the camera at the QR code</span>
-              <button type="button" className={styles.manualLink} onClick={finishScan}>
-                Simulate a successful scan
+          </div>
+          <div className={styles.overlayFooter}>
+            <span className={styles.overlayHint}>
+              {qr.isScanning ? "Point the camera at the QR code on the charger." : "Starting camera…"}
+            </span>
+            <div style={{ display: "flex", gap: "var(--space-5)" }}>
+              <button type="button" className={styles.manualLink} onClick={handleCancelScan}>
+                Cancel
               </button>
+              {qr.torchSupported && (
+                <button type="button" className={styles.manualLink} onClick={qr.toggleTorch}>
+                  {qr.torchOn ? "Torch off" : "Torch on"}
+                </button>
+              )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </AppShell>
+            <button
+              type="button"
+              className={styles.manualLink}
+              onClick={() => qr.simulateScan(DEMO_SCANNED_ID)}
+            >
+              Simulate a successful scan
+            </button>
+          </div>
+        </div>
+      )}
+    </AppLayout>
   );
 }

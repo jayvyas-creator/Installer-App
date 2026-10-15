@@ -1,0 +1,21 @@
+.storeLinks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.storeLink {
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-caption);
+  font-weight: 600;
+  color: var(--text-link);
+  text-decoration: underline;
+}
+
+.storeLink:hover,
+.storeLink:focus-visible {
+  color: var(--color-brand-orange-600);
+}

@@ -1,96 +1,60 @@
-import type {
-  ChargerDetails,
-  DetectedConnector,
-  FailureMode,
-  InstallerInfo,
-  OcppStep,
-} from "@/types";
+import type { OcppStep } from "@/types";
 
-export const DEFAULT_INSTALLER_INFO: InstallerInfo = {
-  fullName: "",
-  phone: "",
-  email: "",
-};
-
-export function resolveFailureMode(chargerId: string): FailureMode {
-  const normalized = chargerId.trim().toUpperCase();
-  const known: FailureMode[] = [
-    "NOTFOUND",
-    "NOAREA",
-    "ONEAREA",
-    "STEPFAIL",
-    "INSTALLFAIL",
-    "NOHEARTBEAT",
-    "COMMFAIL",
-    "HWFAIL",
-    "OCPPFAIL",
-    "ACTIVE",
-  ];
-  for (const mode of known) {
-    if (normalized.includes(mode)) return mode;
-  }
-  return "NONE";
-}
-
-export function buildMockChargerDetails(chargerId: string): ChargerDetails {
-  return {
-    chargerId: chargerId.trim().toUpperCase(),
-    model: "DynaChrg DC-50",
-    serialNumber: `SN-${chargerId.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(-6).padStart(6, "0")}`,
-    manufacturer: "DynaChrg Energy Systems",
-  };
-}
-
-export function buildMockDetectedConnectors(chargerId: string): DetectedConnector[] {
-  const normalized = chargerId.trim().toUpperCase();
-  if (normalized.includes("MULTI")) {
-    return [
-      { id: "connector-1", label: "Connector A", currentType: "AC", status: "ready" },
-      { id: "connector-2", label: "Connector B", currentType: "DC", status: "ready" },
-    ];
-  }
-  return [{ id: "connector-1", label: "Connector A", currentType: "AC", status: "ready" }];
-}
-
+// Communication Checklist items (DESIGN-HANDOFF.md §2.9). Nothing here is
+// sent to the backend — it's a local gate before the Processing screen
+// advances the installation step.
 export const COMMUNICATION_CHECKLIST_ITEMS = [
   {
-    key: "network",
-    label: "Network cable connected",
-    description: "Ethernet run from the charger to the site network panel is seated and secured.",
+    key: "rated-current",
+    label:
+      "Rated current configuration is matching with wiring and circuit breaker and is properly configured on the charger",
+    description:
+      "If charger has dial knob to adjust the current, it has to be properly configured by electrician.",
   },
   {
-    key: "signal",
-    label: "Cellular signal verified",
-    description: "On-board modem shows at least 2 bars on the installer dashboard.",
+    key: "wifi-ocpp",
+    label: "Wifi and OCPP URL configuration updated as per instruction manual",
   },
   {
-    key: "firmware",
-    label: "Firmware up to date",
-    description: "Charger is running the latest published firmware build.",
+    key: "hard-reset",
+    label: "Perform a hard reset of the charger and wait at least 2 minutes",
   },
 ];
 
+// Physical Healthiness checklist (DESIGN-HANDOFF.md §2.11), nothing sent to
+// the backend. Verified verbatim against §2.11; the only correction needed
+// was the status-led item's quote characters (curly -> straight).
 export const PHYSICAL_HEALTH_CHECKLIST_ITEMS = [
-  {
-    key: "enclosure",
-    label: "Enclosure sealed and undamaged",
-    description: "No cracks, gaps, or exposed wiring on the housing.",
-  },
-  {
-    key: "mounting",
-    label: "Mounting bolts torqued",
-    description: "All four mounting bolts are torqued to spec and the unit doesn't shift.",
-  },
-  {
-    key: "grounding",
-    label: "Grounding wire secured",
-    description: "Ground wire is connected to the site grounding rod and tug-tested.",
-  },
-  {
-    key: "cable",
-    label: "Charge cable undamaged",
-    description: "No cuts, fraying, or exposed conductors along the full cable length.",
-  },
+  { key: "mounting-structure", label: "Mounting & structure secure" },
+  { key: "correct-model", label: "Correct charger model" },
+  { key: "clearances-access", label: "Clearances & access" },
+  { key: "labels-visible", label: "Labels visible" },
+  { key: "conduits-sealed", label: "Conduits & entries sealed" },
+  { key: "grounding-bonding", label: "Grounding & bonding" },
+  { key: "breaker-size", label: "Correct breaker size" },
+  { key: "terminations-torqued", label: "Terminations torqued" },
+  { key: "voltage-input", label: "Voltage at input correct" },
+  { key: "no-damage", label: "No obvious damage" },
+  { key: "amp-limit-dial", label: "Amp Limit Dial" },
+  { key: "sim-installed", label: "SIM installed" },
+  { key: "powers-on", label: "Charger powers on" },
+  { key: "status-led", label: 'Status LED "normal"' },
+  { key: "lcd-on", label: "LCD turns on" },
+  { key: "no-lcd-fault", label: "No fault on LCD" },
+  { key: "local-ui", label: "Local UI accessible" },
+  { key: "estop-not-latched", label: "Emergency stop not latched" },
+  { key: "estop-functional", label: "Emergency stop functional" },
+  { key: "holster-fit", label: "Connector holster fit" },
+  { key: "connector-condition", label: "Connector condition" },
+  { key: "cable-routing", label: "Cable routing & strain relief" },
+  { key: "pedestal-base", label: "Pedestal/install base" },
+  { key: "weather-protection", label: "Weather protection" },
+  { key: "antenna-installed", label: "Antenna installed" },
+  { key: "ethernet-ready", label: "Ethernet port ready" },
+  { key: "breaker-operation", label: "External breaker operation" },
+  { key: "panel-covers", label: "Panel & covers closed" },
+  { key: "photos-captured", label: "Photos captured" },
+  { key: "documentation-noted", label: "Documentation noted" },
 ];
 
 export const DEFAULT_OCPP_STEPS: OcppStep[] = [

@@ -1,131 +1,208 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { MapPinOff, Plus } from "lucide-react";
-import * as RadioGroup from "@radix-ui/react-radio-group";
-import { AppShell } from "@/components/organisms/AppShell";
+import { useEffect, useState } from "react";
+import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
+import { Heading } from "@/components/atoms/Heading";
+import { ErrorBanner } from "@/components/molecules/ErrorBanner";
+import { ReadOnlyField } from "@/components/molecules/ReadOnlyField";
+import { SelectField } from "@/components/molecules/SelectField";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import { PHASE_CONFIG_LABELS } from "@/constants/electrical";
-import { MOCK_SITES } from "@/constants/sites";
+import { useHistorySync } from "@/navigation/useHistorySync";
+import { FLOW_STEPS } from "@/constants/flowSteps";
 import formStyles from "./shared/form.module.css";
-import siteCardStyles from "./shared/siteCard.module.css";
-import styles from "./SiteInformationPage.module.css";
+
+const DASH = "—";
+
+function formatNumber(value: number | null, digits = 0): string {
+  return value === null || value === undefined ? DASH : value.toFixed(digits);
+}
+
+function formatPhases(count: number | null): string {
+  if (count === 1) return "Single Phase";
+  if (count === 3) return "Three Phase";
+  if (count === null || count === undefined) return DASH;
+  return `${count} Phase`;
+}
+
+// Normalized shape the capacity panel renders, built from either an existing
+// ApiSiteArea (from the backend) or a freshly-created SiteAreaData (from
+// CreateSiteAreaPage) — see resolveCurrentSiteArea below.
+interface CapacityView {
+  name: string;
+  voltage: number | null;
+  numberOfPhasesLabel: string;
+  maxPowerKw: number | null;
+  ampPerPhase: number | null;
+  ampAllPhases: number | null;
+}
+
+function CapacityPanel({ area }: { area: CapacityView }) {
+  return (
+    <div className={formStyles.section}>
+      <span className={formStyles.sectionTitle}>Capacity</span>
+      <ReadOnlyField label="Supply Voltage (V)" value={formatNumber(area.voltage)} />
+      <ReadOnlyField label="Number of Phases" value={area.numberOfPhasesLabel} />
+      <ReadOnlyField label="Max Power (KW)" value={formatNumber(area.maxPowerKw, 2)} />
+      <ReadOnlyField label="Amp Per Phase (A)" value={formatNumber(area.ampPerPhase)} />
+      <ReadOnlyField label="Amp All Phases (A)" value={formatNumber(area.ampAllPhases)} />
+    </div>
+  );
+}
 
 export function SiteInformationPage() {
-  const navigate = useNavigate();
-  const { state, setSelectedSiteArea, stepOrder } = useInstallFlow();
+  const navigate = useHistorySync();
+  const { session, setSelectedSiteArea } = useInstallFlow();
 
-  const site = useMemo(
-    () => MOCK_SITES.find((candidate) => candidate.id === state.selectedSiteId) ?? null,
-    [state.selectedSiteId],
+  const siteAreas = session.siteAreas;
+  const siteName = session.chargerDetails?.siteName ?? "";
+
+  // Resolves whichever site area id is "current" into the one shape the
+  // capacity panel needs, whether it came from the backend (ApiSiteArea) or
+  // was just created locally (SiteAreaData, not yet sent to the backend).
+  function resolveSiteArea(id: string | null): CapacityView | null {
+    if (!id) return null;
+    if (session.newSiteArea && session.selectedSiteAreaId === id) {
+      const draft = session.newSiteArea;
+      const phases = draft.numberOfPhases === "three" ? 3 : 1;
+      return {
+        name: draft.name,
+        voltage: draft.voltage,
+        numberOfPhasesLabel: formatPhases(phases),
+        maxPowerKw: draft.maxPowerKw,
+        ampPerPhase: draft.ampsPerPhase,
+        ampAllPhases: draft.ampsPerPhase * phases,
+      };
+    }
+    const existing = siteAreas.find((area) => area.siteAreaId === id);
+    if (!existing) return null;
+    const ampAllPhases =
+      existing.maxAmp !== null && existing.numberOfPhases !== null
+        ? existing.maxAmp * existing.numberOfPhases
+        : null;
+    return {
+      name: existing.siteAreaName,
+      voltage: existing.voltage,
+      numberOfPhasesLabel: formatPhases(existing.numberOfPhases),
+      maxPowerKw: existing.maxPower,
+      ampPerPhase: existing.maxAmp,
+      ampAllPhases,
+    };
+  }
+
+  const isKnownExistingArea = siteAreas.some((area) => area.siteAreaId === session.selectedSiteAreaId);
+  const [pendingSelection, setPendingSelection] = useState<string>(
+    siteAreas.length > 1 && isKnownExistingArea ? session.selectedSiteAreaId ?? "" : "",
   );
 
-  const visibleAreas = useMemo(() => {
-    const areas = site
-      ? state.siteAreas.filter(
-          (area) => site.areaIds.includes(area.id) || area.id === state.selectedSiteAreaId,
-        )
-      : state.siteAreas;
-    if (state.failureMode === "NOAREA") return [];
-    if (state.failureMode === "ONEAREA") return areas.slice(0, 1);
-    return areas;
-  }, [state.failureMode, state.siteAreas, state.selectedSiteAreaId, site]);
-
-  const [selected, setSelected] = useState<string | null>(state.selectedSiteAreaId);
-
+  // A single-area site has nothing to choose — it's selected automatically
+  // (DESIGN-HANDOFF.md §2.5, "One area" variant).
   useEffect(() => {
-    if (visibleAreas.length === 1 && !selected) {
-      setSelected(visibleAreas[0].id);
+    if (!session.installed && siteAreas.length === 1 && session.selectedSiteAreaId !== siteAreas[0].siteAreaId) {
+      setSelectedSiteArea(siteAreas[0].siteAreaId);
     }
-  }, [visibleAreas, selected]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.installed, siteAreas, session.selectedSiteAreaId]);
+
+  function handleBack() {
+    navigate("/validate-charger-details");
+  }
 
   function handleContinue() {
-    if (!selected) return;
-    setSelectedSiteArea(selected);
+    if (siteAreas.length > 1) {
+      if (!pendingSelection) return;
+      setSelectedSiteArea(pendingSelection);
+    }
     navigate("/charger-electrical");
   }
 
+  // "Already installed" variant (DESIGN-HANDOFF.md §2.5 / KNOWN-LIMITATIONS
+  // #8): once this session has completed an install, the chosen area is
+  // locked and read-only, reachable only by navigating Back from a later
+  // screen.
+  if (session.installed) {
+    const lockedArea = resolveSiteArea(session.selectedSiteAreaId);
+    return (
+      <AppLayout
+        title="Site Information"
+        onBack={handleBack}
+        stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
+        footer={
+          <Button fullWidth onClick={handleContinue}>
+            Next
+          </Button>
+        }
+      >
+        <div className={formStyles.stack}>
+          <ErrorBanner
+            tone="warning"
+            title="Already installed"
+            description="This charger is already installed. Contact support to change these details."
+          />
+          {lockedArea ? (
+            <CapacityPanel area={lockedArea} />
+          ) : (
+            <p className={formStyles.subheading}>Site area details aren't available for this session.</p>
+          )}
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (siteAreas.length === 1) {
+    const area = resolveSiteArea(siteAreas[0].siteAreaId);
+    return (
+      <AppLayout
+        title="Site Information"
+        onBack={handleBack}
+        stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
+        footer={
+          <Button fullWidth onClick={handleContinue}>
+            Next
+          </Button>
+        }
+      >
+        <div className={formStyles.stack}>
+          <Heading level={1}>Site: {siteName}</Heading>
+          <Heading level={2}>Site Area: {area?.name ?? siteAreas[0].siteAreaName}</Heading>
+          {area && <CapacityPanel area={area} />}
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Several areas: a required dropdown, the picked area's capacity below it,
+  // and a link out to Create Site Area.
+  const selectedArea = resolveSiteArea(pendingSelection || null);
+  const options = siteAreas.map((area) => ({ value: area.siteAreaId, label: area.siteAreaName }));
+
   return (
-    <AppShell
-      title="Site information"
-      onBack={() => navigate(state.selectedSiteId ? "/select-site" : "/enter-token")}
-      stepper={{ steps: [...stepOrder], currentIndex: 2 }}
+    <AppLayout
+      title="Site Information"
+      onBack={handleBack}
+      stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
       footer={
-        <Button fullWidth size="lg" disabled={!selected} onClick={handleContinue}>
-          Continue
+        <Button fullWidth disabled={!pendingSelection} onClick={handleContinue}>
+          Next
         </Button>
       }
     >
       <div className={formStyles.stack}>
-        <div className={formStyles.intro}>
-          <h1 id="site-area-heading" className={formStyles.heading}>
-            Which site area is this?
-          </h1>
-          <p className={formStyles.subheading}>
-            {site
-              ? `Pick the area within ${site.name} where this charger lives.`
-              : "Electrical limits for the charger will be inherited from the area you pick."}
-          </p>
-        </div>
+        <Heading level={1}>Site: {siteName}</Heading>
 
-        {visibleAreas.length === 0 ? (
-          <div className={styles.emptyState}>
-            <MapPinOff size={32} className={styles.emptyIcon} aria-hidden />
-            <span className={styles.emptyTitle}>No site areas configured</span>
-            <p className={styles.emptyBody}>
-              This location doesn't have any site areas set up yet. Add one now to continue the
-              install.
-            </p>
-            <Button
-              variant="secondary"
-              leadingIcon={<Plus size={18} />}
-              onClick={() => navigate("/site-area/new")}
-            >
-              Add site area
-            </Button>
-          </div>
-        ) : (
-          <div className={formStyles.list}>
-            {visibleAreas.length === 1 && (
-              <span className={siteCardStyles.note}>
-                Only one site area is available for this location. It's been selected for you.
-              </span>
-            )}
-            <RadioGroup.Root
-              className={formStyles.list}
-              aria-labelledby="site-area-heading"
-              value={selected ?? undefined}
-              onValueChange={setSelected}
-            >
-              {visibleAreas.map((area) => (
-                <RadioGroup.Item key={area.id} value={area.id} asChild>
-                  <button type="button" className={siteCardStyles.card}>
-                    <span className={siteCardStyles.cardTexts}>
-                      <span className={siteCardStyles.cardName}>{area.name}</span>
-                      <span className={siteCardStyles.cardMeta}>
-                        {area.voltage}V · {PHASE_CONFIG_LABELS[area.phaseConfig]}
-                      </span>
-                    </span>
-                    <span className={siteCardStyles.radio}>
-                      <RadioGroup.Indicator forceMount asChild>
-                        <span className={siteCardStyles.radioDot} />
-                      </RadioGroup.Indicator>
-                    </span>
-                  </button>
-                </RadioGroup.Item>
-              ))}
-            </RadioGroup.Root>
-            <button
-              type="button"
-              className={formStyles.dashedAddRow}
-              onClick={() => navigate("/site-area/new")}
-            >
-              <Plus size={18} aria-hidden />
-              Add a different site area
-            </button>
-          </div>
-        )}
+        <SelectField<string>
+          label="Select Site Area"
+          placeholder="Choose a site area"
+          options={options}
+          value={pendingSelection}
+          onValueChange={setPendingSelection}
+          required
+        />
+
+        {selectedArea && <CapacityPanel area={selectedArea} />}
+
+        <button type="button" className={formStyles.dashedAddRow} onClick={() => navigate("/site-area/new")}>
+          Can't find your site area? Create new site area
+        </button>
       </div>
-    </AppShell>
+    </AppLayout>
   );
 }
