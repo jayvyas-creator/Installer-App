@@ -1,146 +1,147 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AppShell } from "@/components/organisms/AppShell";
+import { useEffect, useState } from "react";
+import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
+import { Heading } from "@/components/atoms/Heading";
 import { Input } from "@/components/atoms/Input";
-import { Select } from "@/components/atoms/Select";
-import { ChecklistItem } from "@/components/molecules/ChecklistItem";
+import { ReadOnlyField } from "@/components/molecules/ReadOnlyField";
+import { SelectField } from "@/components/molecules/SelectField";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import { PHASE_LABELS } from "@/constants/electrical";
-import type { Phase, PhaseConfig } from "@/types";
+import { useHistorySync } from "@/navigation/useHistorySync";
+import { FLOW_STEPS } from "@/constants/flowSteps";
+import { VOLTAGE_OPTIONS, NUMBER_OF_PHASES_OPTIONS, phaseAssignmentOptionsForSiteArea } from "@/constants/electrical";
+import { createSiteAreaDraft, validateSiteAreaDraft, type NumberOfPhases, type PhaseAssignment } from "@/types";
 import formStyles from "./shared/form.module.css";
 
-const VOLTAGE_OPTIONS = [120, 208, 240, 480];
-const PHASE_CONFIG_OPTIONS: { value: PhaseConfig; label: string }[] = [
-  { value: "single-phase", label: "Single-phase" },
-  { value: "three-phase", label: "Three-phase" },
-];
-const PHASES_FOR_CONFIG: Record<PhaseConfig, Phase[]> = {
-  "single-phase": ["L1"],
-  "three-phase": ["L1", "L2", "L3"],
-};
+export function CreateSiteAreaPage() {
+  const navigate = useHistorySync();
+  const { session, setNewSiteArea } = useInstallFlow();
 
-interface CreateSiteAreaPageProps {
-  initialName?: string;
-  initialNameError?: string;
-}
+  const existingNames = session.siteAreas.map((area) => area.siteAreaName);
+  const hasExistingAreas = session.siteAreas.length > 0;
 
-export function CreateSiteAreaPage({
-  initialName = "",
-  initialNameError,
-}: CreateSiteAreaPageProps = {}) {
-  const navigate = useNavigate();
-  const { state, addSiteArea, setSelectedSiteArea, stepOrder } = useInstallFlow();
+  // An installed charger's site area can't be re-created (KNOWN-LIMITATIONS
+  // #8) — bounce back to Site Information, which renders the locked state.
+  useEffect(() => {
+    if (session.installed) navigate("/site-information");
+  }, [session.installed, navigate]);
 
-  const [name, setName] = useState(initialName);
-  const [voltage, setVoltage] = useState(String(VOLTAGE_OPTIONS[0]));
-  const [phaseConfig, setPhaseConfig] = useState<PhaseConfig>("single-phase");
-  const [availablePhases, setAvailablePhases] = useState<Phase[]>(["L1"]);
-  const [nameError, setNameError] = useState<string | undefined>(initialNameError);
+  const [draft, setDraft] = useState(createSiteAreaDraft);
 
-  function handlePhaseConfigChange(next: PhaseConfig) {
-    setPhaseConfig(next);
-    setAvailablePhases(PHASES_FOR_CONFIG[next]);
+  const validation = validateSiteAreaDraft(draft, existingNames);
+  const errors = validation.errors ?? {};
+
+  const phaseAssignmentOptions =
+    draft.numberOfPhases === "" ? [] : phaseAssignmentOptionsForSiteArea(draft.numberOfPhases);
+
+  const maxPowerPreview = (() => {
+    if (draft.voltage === "" || draft.numberOfPhases === "") return null;
+    const amps = Number(draft.ampsPerPhase);
+    if (!draft.ampsPerPhase.trim() || !Number.isFinite(amps) || amps <= 0) return null;
+    const phases = draft.numberOfPhases === "three" ? 3 : 1;
+    return Math.round(((draft.voltage * amps * phases) / 1000) * 100) / 100;
+  })();
+
+  function handleNumberOfPhasesChange(value: NumberOfPhases) {
+    const nextOptions = phaseAssignmentOptionsForSiteArea(value);
+    setDraft((prev) => ({
+      ...prev,
+      numberOfPhases: value,
+      // Changing phases clears an assignment that's no longer valid.
+      phaseAssignment: nextOptions.includes(prev.phaseAssignment as PhaseAssignment)
+        ? prev.phaseAssignment
+        : "",
+    }));
   }
 
-  function togglePhase(phase: Phase) {
-    setAvailablePhases((prev) =>
-      prev.includes(phase) ? prev.filter((p) => p !== phase) : [...prev, phase],
-    );
+  function handleAmpsChange(raw: string) {
+    const digitsOnly = raw.replace(/\D/g, "").slice(0, 4);
+    setDraft((prev) => ({ ...prev, ampsPerPhase: digitsOnly }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setNameError("Give this site area a name.");
-      return;
-    }
-    const isDuplicate = state.siteAreas.some(
-      (area) => area.name.toLowerCase() === trimmed.toLowerCase(),
-    );
-    if (isDuplicate) {
-      setNameError(`A site area named "${trimmed}" already exists. Choose a different name.`);
-      return;
-    }
-    setNameError(undefined);
+  function handleBack() {
+    navigate("/validate-charger-details");
+  }
 
-    const id = `area-${trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
-    addSiteArea({
-      id,
-      name: trimmed,
-      voltage: Number(voltage),
-      phaseConfig,
-      availablePhases,
-    });
-    setSelectedSiteArea(id);
-    navigate("/site-information");
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!validation.data) return;
+    const siteAreaId = `area-${Date.now()}`;
+    setNewSiteArea(validation.data, siteAreaId);
+    navigate("/charger-electrical");
   }
 
   return (
-    <AppShell
-      title="New site area"
-      onBack={() => navigate("/site-information")}
-      stepper={{ steps: [...stepOrder], currentIndex: 2 }}
+    <AppLayout
+      title="Create Site Area"
+      onBack={handleBack}
+      stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
       footer={
-        <Button type="submit" form="create-site-area-form" fullWidth size="lg">
-          Save site area
+        <Button type="submit" form="create-site-area-form" fullWidth disabled={!validation.data}>
+          Next
         </Button>
       }
     >
       <form id="create-site-area-form" className={formStyles.stack} onSubmit={handleSubmit}>
-        <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Add a site area</h1>
-          <p className={formStyles.subheading}>
-            Describe the electrical service for this area. The charger's limits will be set from
-            what you enter here.
-          </p>
-        </div>
+        <Heading level={1}>Create Site Area</Heading>
 
         <Input
-          label="Site area name"
-          placeholder="e.g. North Lot"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            if (nameError) setNameError(undefined);
-          }}
-          errorText={nameError}
-          autoCapitalize="words"
+          label="Area Name"
+          value={draft.name}
+          onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
+          errorText={draft.name.trim() ? errors.name : undefined}
           required
         />
 
-        <div className={formStyles.fieldGrid}>
-          <Select
-            label="Voltage"
-            value={voltage}
-            onChange={(e) => setVoltage(e.target.value)}
-            options={VOLTAGE_OPTIONS.map((v) => ({ value: String(v), label: `${v}V` }))}
-            required
-          />
-          <Select
-            label="Phase configuration"
-            value={phaseConfig}
-            onChange={(e) => handlePhaseConfigChange(e.target.value as PhaseConfig)}
-            options={PHASE_CONFIG_OPTIONS}
-            required
-          />
-        </div>
+        <SelectField<string>
+          label="Supply Voltage (V)"
+          placeholder="Select a voltage"
+          value={draft.voltage === "" ? "" : String(draft.voltage)}
+          onValueChange={(value) => setDraft((prev) => ({ ...prev, voltage: Number(value) }))}
+          options={VOLTAGE_OPTIONS.map((voltage) => ({ value: String(voltage), label: `${voltage}V` }))}
+          required
+        />
 
-        <div className={formStyles.section}>
-          <span className={formStyles.sectionTitle}>Available phases</span>
-          <div className={formStyles.list}>
-            {PHASES_FOR_CONFIG[phaseConfig].map((phase) => (
-              <ChecklistItem
-                key={phase}
-                label={PHASE_LABELS[phase]}
-                checked={availablePhases.includes(phase)}
-                onToggle={() => togglePhase(phase)}
-              />
-            ))}
-          </div>
-        </div>
+        <SelectField<NumberOfPhases>
+          label="Number of Phases"
+          placeholder="Select number of phases"
+          value={draft.numberOfPhases}
+          onValueChange={handleNumberOfPhasesChange}
+          options={NUMBER_OF_PHASES_OPTIONS}
+          required
+        />
+
+        <SelectField<PhaseAssignment>
+          label="Phase Assignment"
+          placeholder={draft.numberOfPhases === "" ? "Select number of phases first" : "Select a phase assignment"}
+          helperText={draft.numberOfPhases === "" ? "Select number of phases first" : undefined}
+          value={draft.phaseAssignment}
+          onValueChange={(value) => setDraft((prev) => ({ ...prev, phaseAssignment: value }))}
+          options={phaseAssignmentOptions.map((code) => ({ value: code, label: code }))}
+          disabled={draft.numberOfPhases === ""}
+          required
+        />
+
+        <Input
+          label="Amps Per Phase (A)"
+          value={draft.ampsPerPhase}
+          onChange={(e) => handleAmpsChange(e.target.value)}
+          errorText={draft.ampsPerPhase.trim() ? errors.ampsPerPhase : undefined}
+          inputMode="numeric"
+          maxLength={4}
+          required
+        />
+
+        <ReadOnlyField
+          label="Max Power (KW)"
+          value={maxPowerPreview === null ? "" : maxPowerPreview.toFixed(2)}
+        />
+
+        {hasExistingAreas && (
+          <button type="button" className={formStyles.dashedAddRow} onClick={() => navigate("/site-information")}>
+            Choose an existing site area instead
+          </button>
+        )}
       </form>
-    </AppShell>
+    </AppLayout>
   );
 }

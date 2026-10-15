@@ -1,49 +1,46 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
-import { StatusPill } from "@/components/atoms/StatusPill";
 import { useInstallFlow } from "@/state/InstallFlowContext";
+import { useHistorySync } from "@/navigation/useHistorySync";
 import styles from "@/styles/outcome.module.css";
 import formStyles from "./shared/form.module.css";
 
+// DESIGN-HANDOFF.md 2.13 "Ready to be commissioned (end)": the final screen of
+// the main flow. "Back to Home" clears the session and returns to Home.
 export function ReadyToBeCommissionedPage() {
-  const navigate = useNavigate();
-  const { state, reset } = useInstallFlow();
+  const navigate = useHistorySync();
+  const { session, reset } = useInstallFlow();
 
   useEffect(() => {
     const showTimer = window.setTimeout(() => {
-      toast(`${state.chargerId} commissioning complete. Charger is now live.`, {
+      toast(`${session.chargerId} commissioning complete. Charger is now live.`, {
         duration: 3700,
       });
     }, 500);
     return () => window.clearTimeout(showTimer);
-  }, [state.chargerId]);
+  }, [session.chargerId]);
 
-  function handleDone() {
+  function handleBackToHome() {
     reset();
-    navigate("/", { replace: true });
+    navigate("/");
   }
 
   return (
-    <AppShell title="All set" backDisabled showHelp={false}>
+    <AppShell title="Ready to be commissioned" backDisabled showHelp={false}>
       <div className={styles.wrap}>
         <OutcomePanel
           tone="success"
           title="Ready to be commissioned"
-          description={`${state.chargerId} has passed every check and is ready to go live. A DynaChrg coordinator will complete final commissioning shortly.`}
-          primaryAction={{ label: "Done", onClick: handleDone }}
+          description="All tasks are successfully completed"
+          primaryAction={{ label: "Back to Home", onClick: handleBackToHome }}
         >
-          <div className={formStyles.summaryRow}>
-            <span className={formStyles.summaryText}>Installer</span>
-            <span className={formStyles.summaryText}>{state.installerInfo.fullName}</span>
-          </div>
-          <div className={formStyles.summaryRow}>
-            <span className={formStyles.summaryText}>Connectors</span>
-            <StatusPill tone="success" showDot={false}>
-              {state.connectors.length} configured
-            </StatusPill>
+          <div className={formStyles.section}>
+            <p className={formStyles.subheading}>
+              Charger is Ready for Commissioning. Thank you for completing the installation steps
+              successfully.
+            </p>
           </div>
         </OutcomePanel>
       </div>

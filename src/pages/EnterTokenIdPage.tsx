@@ -1,84 +1,147 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { KeyRound } from "lucide-react";
-import { AppShell } from "@/components/organisms/AppShell";
+import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
+import { ErrorBanner } from "@/components/molecules/ErrorBanner";
 import { useInstallFlow } from "@/state/InstallFlowContext";
-import type { ProcessingState } from "./ProcessingPage";
+import { useHistorySync } from "@/navigation/useHistorySync";
+import { resolveRoute } from "@/navigation/resolveRoute";
+import { getStatus } from "@/api/endpoints";
+import { enterTokenFlow } from "@/flows/enterTokenFlow";
+import { validateInstallerDraft } from "@/types";
+import { FLOW_STEPS } from "@/constants/flowSteps";
 import formStyles from "./shared/form.module.css";
 
-export function EnterTokenIdPage() {
-  const navigate = useNavigate();
-  const { state, setTokenId, stepOrder } = useInstallFlow();
-  const [token, setToken] = useState(state.tokenId);
-  const [error, setError] = useState<string | undefined>();
+// Result<T> (src/types/api.ts) only carries a plain error string, so the two
+// internal calls enterTokenFlow makes (register token, then look up the
+// charger) can't be told apart from the page's side (see enterTokenFlow.ts's
+// own comment on this). This heuristic is what decides "charger/token
+// rejected -> No EV Charger Found" vs. "something else -> stay here with an
+// inline error", per DESIGN-HANDOFF.md §2.3's Next/Back rule.
+const NOT_FOUND_PATTERN = /couldn't find|could not find|not found|invalid (token|charger)|rejected/i;
 
-  function handleTokenBlur() {
-    setError(token.trim() ? undefined : "Enter the token ID from the charger's label.");
+export function EnterTokenIdPage() {
+  const navigate = useHistorySync();
+  const { session, setTokenId, setRegistration, setChargerDetails, setStatus, markRegistered } =
+    useInstallFlow();
+  const [tokenValue, setTokenValue] = useState(session.tokenId);
+  const [fieldError, setFieldError] = useState<string | undefined>();
+  const [canRetry, setCanRetry] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const installerCheck = validateInstallerDraft(session.installerDraft);
+  const installerInvalid = installerCheck.errors !== null;
+
+  async function runVerification(token: string) {
+    setLoading(true);
+    setFieldError(undefined);
+    setCanRetry(false);
+
+    const result = await enterTokenFlow(session.chargerId, token, session.installerDraft);
+    if (!result.ok) {
+      setLoading(false);
+      if (NOT_FOUND_PATTERN.test(result.error)) {
+        navigate("/no-charger-found");
+        return;
+      }
+      setFieldError(result.error);
+      setCanRetry(true);
+      return;
+    }
+
+    setTokenId(token);
+    setRegistration(result.data.tenantId, result.data.siteId);
+    setChargerDetails(result.data.chargerDetails, result.data.siteAreas);
+    markRegistered();
+
+    const statusResult = await getStatus(session.chargerId, token);
+    setLoading(false);
+    if (!statusResult.ok) {
+      if (NOT_FOUND_PATTERN.test(statusResult.error)) {
+        navigate("/no-charger-found");
+        return;
+      }
+      setFieldError("Failed to fetch charger status. Please try again later.");
+      setCanRetry(true);
+      return;
+    }
+
+    setStatus(statusResult.data);
+    navigate(resolveRoute(statusResult.data, { siteAreaCount: result.data.siteAreas.length }));
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!token.trim()) {
-      setError("Enter the token ID from the charger's label.");
+    if (installerInvalid || loading) return;
+    const trimmed = tokenValue.trim();
+    if (!trimmed) {
+      setFieldError("Token ID is required.");
+      setCanRetry(false);
       return;
     }
-    const trimmedToken = token.trim();
-    setTokenId(trimmedToken);
-    const isMultiSite = trimmedToken.toUpperCase().includes("MULTI");
+    void runVerification(trimmed);
+  }
 
-    const processingState: ProcessingState = {
-      label: "Validating charger details…",
-      sublabel: `Matching token to ${state.chargerId}`,
-      durationMs: 1700,
-      next: isMultiSite ? "/select-site" : "/site-information",
-      failure:
-        state.failureMode === "INSTALLFAIL"
-          ? {
-              title: "Validation failed",
-              description:
-                "We couldn't match this token to the charger. Double-check the token ID and try again.",
-              retryLabel: "Try again",
-              secondaryLabel: "Re-enter token",
-              secondaryTo: "/enter-token",
-            }
-          : undefined,
-    };
-    navigate("/processing", { state: processingState });
+  function handleRetry() {
+    const trimmed = tokenValue.trim();
+    if (!trimmed || loading) return;
+    void runVerification(trimmed);
   }
 
   return (
-    <AppShell
-      title="Enter token ID"
+    <AppLayout
+      title="Enter Token ID"
       onBack={() => navigate("/installer-info")}
-      stepper={{ steps: [...stepOrder], currentIndex: 1 }}
+      backDisabled={loading}
+      stepper={{ steps: FLOW_STEPS, currentIndex: 1 }}
       footer={
-        <Button type="submit" form="enter-token-form" fullWidth size="lg">
-          Validate
+        <Button
+          type="submit"
+          form="enter-token-form"
+          fullWidth
+          size="lg"
+          loading={loading}
+          disabled={installerInvalid}
+        >
+          {loading ? "Verifying…" : "Continue"}
         </Button>
       }
     >
-      <form id="enter-token-form" className={formStyles.stack} onSubmit={handleSubmit}>
+      <form id="enter-token-form" className={formStyles.stack} onSubmit={handleSubmit} noValidate>
         <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Enter the charger's token</h1>
+          <h1 className={formStyles.heading}>Enter the installer token</h1>
           <p className={formStyles.subheading}>
-            Found on the inside panel label, directly beneath the serial number.
+            The app will check the charger, register the token, and find out where to continue.
           </p>
         </div>
 
+        {installerInvalid && (
+          <ErrorBanner
+            tone="warning"
+            title="Some installer information is missing or invalid. Go back and check it before continuing."
+          />
+        )}
+
         <Input
           label="Token ID"
-          placeholder="TKN-9F31-2287"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          onBlur={handleTokenBlur}
-          errorText={error}
-          leadingIcon={<KeyRound size={18} />}
-          autoCapitalize="characters"
+          value={tokenValue}
+          onChange={(e) => {
+            setTokenValue(e.target.value);
+            setFieldError(undefined);
+            setCanRetry(false);
+          }}
+          helperText="Token ID will be provided on the work order."
+          errorText={fieldError}
+          disabled={loading || installerInvalid}
           required
         />
+
+        {canRetry && (
+          <Button type="button" variant="secondary" size="md" onClick={handleRetry} disabled={loading}>
+            Retry
+          </Button>
+        )}
       </form>
-    </AppShell>
+    </AppLayout>
   );
 }

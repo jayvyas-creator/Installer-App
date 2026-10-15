@@ -1,0 +1,22 @@
+.wordmark {
+  font-family: var(--font-family-heading);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+.accent {
+  color: var(--color-primary);
+}
+
+.sm {
+  font-size: var(--font-size-body);
+}
+
+.md {
+  font-size: var(--font-size-title);
+}
+
+.lg {
+  font-size: var(--font-size-display);
+}

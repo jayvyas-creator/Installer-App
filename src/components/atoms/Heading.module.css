@@ -1,0 +1,21 @@
+.heading {
+  font-family: var(--font-family-heading);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.level1 {
+  font-size: 1.875rem; /* 30px, DESIGN-HANDOFF.md §1 */
+  line-height: var(--line-height-title);
+}
+
+.level2 {
+  font-size: 1.5rem; /* 24px */
+  line-height: var(--line-height-headline);
+}
+
+.level3 {
+  font-size: 1.25rem; /* 20px */
+  line-height: var(--line-height-headline);
+}

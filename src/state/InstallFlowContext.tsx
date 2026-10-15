@@ -2,190 +2,254 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { DEFAULT_OCPP_STEPS } from "@/constants/mockData";
 import {
-  DEFAULT_INSTALLER_INFO,
-  DEFAULT_OCPP_STEPS,
-} from "@/constants/mockData";
-import { MOCK_SITE_AREAS } from "@/constants/electrical";
-import type {
-  ChargerDetails,
-  ChargerElectricalConfig,
-  ConnectorConfig,
-  FailureMode,
-  InstallFlowState,
-  InstallerInfo,
-  SiteArea,
+  createConnectorDraft,
+  createInstallerDraft,
+  type ChargerDetails,
+  type ChargerElectricalData,
+  type ConnectorDraft,
+  type InstallerDraft,
+  type OcppStep,
+  type SiteAreaData,
 } from "@/types";
+import type { ApiSiteArea, ChargerStatusResponse } from "@/types/api";
 
-const STEP_ORDER = [
-  "Installer info",
-  "Token ID",
-  "Site info",
-  "Electrical",
-  "Connectors",
-  "Checklist",
-  "Physical check",
-  "OCPP test",
-] as const;
+// Bump this whenever the session shape changes incompatibly. A mismatch (or
+// missing key) resets to a fresh session instead of attempting a migration —
+// simplest thing that works for a short-lived, single-device install flow.
+const SESSION_KEY = "dynachrg.installSession.v6";
 
-export type StepLabel = (typeof STEP_ORDER)[number];
-
-interface InstallFlowContextValue {
-  state: InstallFlowState;
-  stepOrder: readonly string[];
-  setChargerId: (chargerId: string, failureMode: FailureMode) => void;
-  setChargerDetails: (details: ChargerDetails) => void;
-  setInstallerInfo: (info: InstallerInfo) => void;
-  setTokenId: (token: string) => void;
-  setSelectedSite: (siteId: string) => void;
-  addSiteArea: (area: SiteArea) => void;
-  setSelectedSiteArea: (areaId: string) => void;
-  setElectricalConfig: (config: ChargerElectricalConfig) => void;
-  setConnectors: (connectors: ConnectorConfig[]) => void;
-  toggleChecklistItem: (key: string) => void;
-  togglePhysicalChecklistItem: (key: string) => void;
-  setOcppSteps: (steps: InstallFlowState["ocppSteps"]) => void;
-  reset: () => void;
+export interface InstallSession {
+  chargerId: string;
+  installerDraft: InstallerDraft;
+  tokenId: string;
+  installerToken: string | null;
+  tenantId: string | null;
+  siteId: string | null;
+  chargerDetails: ChargerDetails | null;
+  siteAreas: ApiSiteArea[];
+  selectedSiteAreaId: string | null;
+  newSiteArea: SiteAreaData | null;
+  chargerElectrical: ChargerElectricalData | null;
+  connectorDrafts: ConnectorDraft[];
+  checklistProgress: Record<string, boolean>;
+  physicalChecklistProgress: Record<string, boolean>;
+  ocppSteps: OcppStep[];
+  status: ChargerStatusResponse | null;
+  // Guard flags (Parity.md): prevent a retried/duplicated POST once a step
+  // has actually succeeded against the backend.
+  registered: boolean;
+  installed: boolean;
 }
 
-function createInitialState(): InstallFlowState {
+function createEmptySession(installerDraft: InstallerDraft = createInstallerDraft()): InstallSession {
   return {
     chargerId: "",
-    failureMode: "NONE",
-    chargerDetails: null,
-    installerInfo: DEFAULT_INSTALLER_INFO,
+    installerDraft,
     tokenId: "",
-    selectedSiteId: null,
-    siteAreas: MOCK_SITE_AREAS,
+    installerToken: null,
+    tenantId: null,
+    siteId: null,
+    chargerDetails: null,
+    siteAreas: [],
     selectedSiteAreaId: null,
-    electricalConfig: null,
-    connectors: [],
+    newSiteArea: null,
+    chargerElectrical: null,
+    connectorDrafts: [createConnectorDraft("connector-1")],
     checklistProgress: {},
     physicalChecklistProgress: {},
     ocppSteps: DEFAULT_OCPP_STEPS,
+    status: null,
+    registered: false,
+    installed: false,
   };
 }
 
-const STORAGE_KEY = "dynachrg-installer-flow-state-v1";
-
-function loadPersistedState(): InstallFlowState {
+function loadSession(): InstallSession {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return createInitialState();
-    return { ...createInitialState(), ...(JSON.parse(raw) as Partial<InstallFlowState>) };
+    const raw = window.sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return createEmptySession();
+    const parsed = JSON.parse(raw) as Partial<InstallSession>;
+    return { ...createEmptySession(), ...parsed };
   } catch {
-    return createInitialState();
+    return createEmptySession();
   }
+}
+
+function persistSession(session: InstallSession) {
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } catch {
+    // Private browsing or full storage: fall back to in-memory only.
+  }
+}
+
+interface InstallFlowContextValue {
+  session: InstallSession;
+  setChargerId: (chargerId: string) => void;
+  resetForNewChargerId: (chargerId: string) => void;
+  setInstallerDraft: (draft: InstallerDraft) => void;
+  setTokenId: (tokenId: string) => void;
+  setRegistration: (tenantId: string, siteId: string) => void;
+  setChargerDetails: (details: ChargerDetails, siteAreas: ApiSiteArea[]) => void;
+  setStatus: (status: ChargerStatusResponse) => void;
+  setSelectedSiteArea: (siteAreaId: string) => void;
+  setNewSiteArea: (siteArea: SiteAreaData, siteAreaId: string) => void;
+  setChargerElectrical: (data: ChargerElectricalData) => void;
+  setConnectorDrafts: (drafts: ConnectorDraft[]) => void;
+  markRegistered: () => void;
+  markInstalled: () => void;
+  toggleChecklistItem: (key: string) => void;
+  togglePhysicalChecklistItem: (key: string) => void;
+  setOcppSteps: (steps: OcppStep[]) => void;
+  reset: () => void;
 }
 
 const InstallFlowContext = createContext<InstallFlowContextValue | null>(null);
 
 export function InstallFlowProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<InstallFlowState>(loadPersistedState);
+  const [session, setSession] = useState<InstallSession>(loadSession);
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // Private browsing or full storage: fall back to in-memory only.
-    }
-  }, [state]);
-
-  const setChargerId = useCallback((chargerId: string, failureMode: FailureMode) => {
-    setState((prev) => ({ ...prev, chargerId, failureMode }));
+  const update = useCallback((updater: (prev: InstallSession) => InstallSession) => {
+    setSession((prev) => {
+      const next = updater(prev);
+      persistSession(next);
+      return next;
+    });
   }, []);
 
-  const setChargerDetails = useCallback((details: ChargerDetails) => {
-    setState((prev) => ({ ...prev, chargerDetails: details }));
-  }, []);
+  const setChargerId = useCallback(
+    (chargerId: string) => update((prev) => ({ ...prev, chargerId })),
+    [update],
+  );
 
-  const setInstallerInfo = useCallback((info: InstallerInfo) => {
-    setState((prev) => ({ ...prev, installerInfo: info }));
-  }, []);
+  // Starting over on a different charger ID clears everything downstream,
+  // but keeps what the installer already typed on the Installer Information
+  // screen — there's no reason to make them retype their own details.
+  const resetForNewChargerId = useCallback(
+    (chargerId: string) => update((prev) => ({ ...createEmptySession(prev.installerDraft), chargerId })),
+    [update],
+  );
 
-  const setTokenId = useCallback((token: string) => {
-    setState((prev) => ({ ...prev, tokenId: token }));
-  }, []);
+  const setInstallerDraft = useCallback(
+    (installerDraft: InstallerDraft) => update((prev) => ({ ...prev, installerDraft })),
+    [update],
+  );
 
-  const setSelectedSite = useCallback((siteId: string) => {
-    setState((prev) => ({ ...prev, selectedSiteId: siteId }));
-  }, []);
+  const setTokenId = useCallback(
+    (tokenId: string) => update((prev) => ({ ...prev, tokenId, installerToken: tokenId })),
+    [update],
+  );
 
-  const addSiteArea = useCallback((area: SiteArea) => {
-    setState((prev) => ({ ...prev, siteAreas: [...prev.siteAreas, area] }));
-  }, []);
+  const setRegistration = useCallback(
+    (tenantId: string, siteId: string) => update((prev) => ({ ...prev, tenantId, siteId })),
+    [update],
+  );
 
-  const setSelectedSiteArea = useCallback((areaId: string) => {
-    setState((prev) => ({ ...prev, selectedSiteAreaId: areaId }));
-  }, []);
+  const setChargerDetails = useCallback(
+    (chargerDetails: ChargerDetails, siteAreas: ApiSiteArea[]) =>
+      update((prev) => ({ ...prev, chargerDetails, siteAreas })),
+    [update],
+  );
 
-  const setElectricalConfig = useCallback((config: ChargerElectricalConfig) => {
-    setState((prev) => ({ ...prev, electricalConfig: config }));
-  }, []);
+  const setStatus = useCallback(
+    (status: ChargerStatusResponse) => update((prev) => ({ ...prev, status })),
+    [update],
+  );
 
-  const setConnectors = useCallback((connectors: ConnectorConfig[]) => {
-    setState((prev) => ({ ...prev, connectors }));
-  }, []);
+  const setSelectedSiteArea = useCallback(
+    (selectedSiteAreaId: string) => update((prev) => ({ ...prev, selectedSiteAreaId, newSiteArea: null })),
+    [update],
+  );
 
-  const toggleChecklistItem = useCallback((key: string) => {
-    setState((prev) => ({
-      ...prev,
-      checklistProgress: { ...prev.checklistProgress, [key]: !prev.checklistProgress[key] },
-    }));
-  }, []);
+  const setNewSiteArea = useCallback(
+    (newSiteArea: SiteAreaData, siteAreaId: string) =>
+      update((prev) => ({ ...prev, newSiteArea, selectedSiteAreaId: siteAreaId })),
+    [update],
+  );
 
-  const togglePhysicalChecklistItem = useCallback((key: string) => {
-    setState((prev) => ({
-      ...prev,
-      physicalChecklistProgress: {
-        ...prev.physicalChecklistProgress,
-        [key]: !prev.physicalChecklistProgress[key],
-      },
-    }));
-  }, []);
+  const setChargerElectrical = useCallback(
+    (chargerElectrical: ChargerElectricalData) => update((prev) => ({ ...prev, chargerElectrical })),
+    [update],
+  );
 
-  const setOcppSteps = useCallback((steps: InstallFlowState["ocppSteps"]) => {
-    setState((prev) => ({ ...prev, ocppSteps: steps }));
-  }, []);
+  const setConnectorDrafts = useCallback(
+    (connectorDrafts: ConnectorDraft[]) => update((prev) => ({ ...prev, connectorDrafts })),
+    [update],
+  );
 
-  const reset = useCallback(() => {
-    setState(createInitialState());
-  }, []);
+  const markRegistered = useCallback(() => update((prev) => ({ ...prev, registered: true })), [update]);
+  const markInstalled = useCallback(() => update((prev) => ({ ...prev, installed: true })), [update]);
+
+  const toggleChecklistItem = useCallback(
+    (key: string) =>
+      update((prev) => ({
+        ...prev,
+        checklistProgress: { ...prev.checklistProgress, [key]: !prev.checklistProgress[key] },
+      })),
+    [update],
+  );
+
+  const togglePhysicalChecklistItem = useCallback(
+    (key: string) =>
+      update((prev) => ({
+        ...prev,
+        physicalChecklistProgress: {
+          ...prev.physicalChecklistProgress,
+          [key]: !prev.physicalChecklistProgress[key],
+        },
+      })),
+    [update],
+  );
+
+  const setOcppSteps = useCallback(
+    (ocppSteps: OcppStep[]) => update((prev) => ({ ...prev, ocppSteps })),
+    [update],
+  );
+
+  const reset = useCallback(() => update(() => createEmptySession()), [update]);
 
   const value = useMemo<InstallFlowContextValue>(
     () => ({
-      state,
-      stepOrder: STEP_ORDER,
+      session,
       setChargerId,
-      setChargerDetails,
-      setInstallerInfo,
+      resetForNewChargerId,
+      setInstallerDraft,
       setTokenId,
-      setSelectedSite,
-      addSiteArea,
+      setRegistration,
+      setChargerDetails,
+      setStatus,
       setSelectedSiteArea,
-      setElectricalConfig,
-      setConnectors,
+      setNewSiteArea,
+      setChargerElectrical,
+      setConnectorDrafts,
+      markRegistered,
+      markInstalled,
       toggleChecklistItem,
       togglePhysicalChecklistItem,
       setOcppSteps,
       reset,
     }),
     [
-      state,
+      session,
       setChargerId,
-      setChargerDetails,
-      setInstallerInfo,
+      resetForNewChargerId,
+      setInstallerDraft,
       setTokenId,
-      setSelectedSite,
-      addSiteArea,
+      setRegistration,
+      setChargerDetails,
+      setStatus,
       setSelectedSiteArea,
-      setElectricalConfig,
-      setConnectors,
+      setNewSiteArea,
+      setChargerElectrical,
+      setConnectorDrafts,
+      markRegistered,
+      markInstalled,
       toggleChecklistItem,
       togglePhysicalChecklistItem,
       setOcppSteps,
