@@ -1,14 +1,16 @@
 import { AlertCircle } from "lucide-react";
-import { useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { useId, type InputHTMLAttributes, type ReactNode, type Ref } from "react";
 import styles from "./Input.module.css";
 
 export interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
   label: string;
   helperText?: string;
+  /** Replaces helperText and switches the field into its error visual state. */
   errorText?: string;
   leadingIcon?: ReactNode;
   trailingAdornment?: ReactNode;
+  ref?: Ref<HTMLInputElement>;
 }
 
 export function Input({
@@ -20,6 +22,7 @@ export function Input({
   required,
   disabled,
   className,
+  ref,
   ...rest
 }: InputProps) {
   const id = useId();
@@ -48,6 +51,7 @@ export function Input({
           </span>
         )}
         <input
+          ref={ref}
           id={id}
           className={styles.input}
           disabled={disabled}

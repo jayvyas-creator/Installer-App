@@ -1,5 +1,5 @@
 import { Loader2 } from "lucide-react";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import styles from "./Button.module.css";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -9,11 +9,13 @@ export interface ButtonProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /** Shows a spinner in place of the leading icon and implies `disabled`. */
   loading?: boolean;
   fullWidth?: boolean;
   leadingIcon?: ReactNode;
   trailingIcon?: ReactNode;
   children: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export function Button({
@@ -26,12 +28,14 @@ export function Button({
   disabled,
   className,
   children,
+  ref,
   ...rest
 }: ButtonProps) {
   const isDisabled = disabled || loading;
 
   return (
     <button
+      ref={ref}
       className={[
         styles.button,
         styles[variant],

@@ -1,5 +1,5 @@
 import { AlertCircle, ChevronDown } from "lucide-react";
-import { useId, type ReactNode, type SelectHTMLAttributes } from "react";
+import { useId, type ReactNode, type Ref, type SelectHTMLAttributes } from "react";
 import inputStyles from "./Input.module.css";
 import styles from "./Select.module.css";
 
@@ -13,10 +13,12 @@ export interface SelectProps
   extends Omit<SelectHTMLAttributes<HTMLSelectElement>, "id"> {
   label: string;
   options: SelectOption[];
+  /** Rendered as a disabled first option; only meaningful while value is "". */
   placeholder?: string;
   helperText?: string;
   errorText?: string;
   leadingIcon?: ReactNode;
+  ref?: Ref<HTMLSelectElement>;
 }
 
 export function Select({
@@ -30,6 +32,7 @@ export function Select({
   disabled,
   value,
   className,
+  ref,
   ...rest
 }: SelectProps) {
   const id = useId();
@@ -61,6 +64,7 @@ export function Select({
         )}
         <div className={styles.selectWrapper} style={{ flex: 1, minWidth: 0 }}>
           <select
+            ref={ref}
             id={id}
             className={styles.select}
             disabled={disabled}

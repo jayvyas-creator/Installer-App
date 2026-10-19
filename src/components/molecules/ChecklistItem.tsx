@@ -17,20 +17,16 @@ export function ChecklistItem({
   disabled,
 }: ChecklistItemProps) {
   return (
-    <button
-      type="button"
+    <label
       className={styles.row}
       data-checked={checked || undefined}
-      onClick={onToggle}
-      disabled={disabled}
-      role="checkbox"
-      aria-checked={checked}
+      data-disabled={disabled || undefined}
     >
-      <Checkbox checked={checked} readOnly disabled={disabled} tabIndex={-1} />
+      <Checkbox checked={checked} disabled={disabled} onChange={onToggle} />
       <span className={styles.texts}>
         <span className={styles.label}>{label}</span>
         {description && <span className={styles.description}>{description}</span>}
       </span>
-    </button>
+    </label>
   );
 }
