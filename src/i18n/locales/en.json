@@ -1,0 +1,301 @@
+{
+  "appShell": {
+    "goBack": "Go back",
+    "backOnline": "Back online.",
+    "helpAndSupport": "Help and support",
+    "offlineTitle": "You're offline",
+    "offlineDescription": "Check your connection — you can keep working, and we'll pick back up once you're back online."
+  },
+  "errorBoundary": {
+    "title": "Unexpected error",
+    "heading": "This screen hit a snag",
+    "description": "The current step didn't load correctly. Your install progress is still saved. Try again, or reload the app if it keeps happening.",
+    "tryAgain": "Try again",
+    "reloadApp": "Reload app"
+  },
+  "resumeInstallBanner": {
+    "title": "Resume install in progress",
+    "description": "{{chargerId}}, started by {{installerName}}. Pick up where you left off, or dismiss this draft and start a new install.",
+    "resume": "Resume",
+    "startNew": "Start new"
+  },
+  "phoneNumberField": {
+    "codeLabel": "Code",
+    "mobileNumberLabel": "Mobile Number",
+    "countryOption": "{{dialCode}} ({{name}})"
+  },
+  "stepper": {
+    "ariaLabel": "Step {{current}} of {{total}}: {{stepName}}"
+  },
+  "home": {
+    "title": "Installer",
+    "subtitle": "Scan the charger's QR code or enter its ID to start the install.",
+    "logoAlt": "DynaChrg",
+    "defaultInstallerName": "an installer",
+    "fieldErrorRequired": "Enter a Charger ID or scan the QR code on the charger.",
+    "cameraError": {
+      "insecure-context": "The camera only works over HTTPS (or on localhost). You can enter the Charger ID below instead.",
+      "permission-denied": "Camera access was denied. Allow camera access in your browser settings to scan. You can enter the Charger ID below instead.",
+      "no-camera": "No camera was found on this device. You can enter the Charger ID below instead.",
+      "camera-busy": "The camera is being used by another app. Close it and try again. You can enter the Charger ID below instead.",
+      "unknown": "The camera couldn't be started in this browser. You can enter the Charger ID below instead."
+    },
+    "chargerIdLabel": "Charger ID",
+    "chargerIdPlaceholder": "DC-48213",
+    "continueAriaLabel": "Continue",
+    "orEnterManually": "or enter it manually",
+    "scanQrCode": "Scan QR code",
+    "scanPrompt": "Scan the QR code on the charger you are installing",
+    "scannerDialogAriaLabel": "QR code scanner",
+    "closeScannerAriaLabel": "Close scanner",
+    "pointCamera": "Point the camera at the QR code on the charger.",
+    "startingCamera": "Starting camera…",
+    "cancel": "Cancel",
+    "torchOff": "Torch off",
+    "torchOn": "Torch on",
+    "simulateScan": "Simulate a successful scan"
+  },
+  "enterTokenId": {
+    "title": "Enter Token ID",
+    "verifying": "Verifying…",
+    "continue": "Next",
+    "heading": "Enter the installer token",
+    "subheading": "The app will check the charger, register the token, and find out where to continue.",
+    "installerInvalidWarning": "Some installer information is missing or invalid. Go back and check it before continuing.",
+    "tokenIdLabel": "Token ID",
+    "tokenIdHelper": "Token ID will be provided on the work order.",
+    "tokenIdRequired": "Token ID is required.",
+    "statusFetchFailed": "Failed to fetch charger status. Please try again later.",
+    "retry": "Retry"
+  },
+  "installerInformation": {
+    "title": "Installer information",
+    "continue": "Next",
+    "heading": "Who's doing this install?",
+    "subheading": "We'll attach your details to this installation record for the site owner.",
+    "companyNameLabel": "Company Name",
+    "firstNameLabel": "First Name",
+    "lastNameLabel": "Last Name",
+    "licenseNumberLabel": "C-License Number",
+    "evitpNumberLabel": "EVITP Certification Number",
+    "emailLabel": "Email ID"
+  },
+  "siteInformation": {
+    "title": "Site Information",
+    "next": "Next",
+    "capacityTitle": "Capacity",
+    "voltageLabel": "Supply Voltage (V)",
+    "numberOfPhasesLabel": "Number of Phases",
+    "maxPowerLabel": "Max Power (KW)",
+    "ampPerPhaseLabel": "Amp Per Phase (A)",
+    "ampAllPhasesLabel": "Amp All Phases (A)",
+    "singlePhase": "Single Phase",
+    "threePhase": "Three Phase",
+    "multiPhase": "{{count}} Phase",
+    "alreadyInstalledTitle": "Already installed",
+    "alreadyInstalledDescription": "This charger is already installed. Contact support to change these details.",
+    "detailsUnavailable": "Site area details aren't available for this session.",
+    "siteHeading": "Site: {{siteName}}",
+    "siteAreaHeading": "Site Area: {{areaName}}",
+    "selectSiteAreaLabel": "Select Site Area",
+    "selectSiteAreaPlaceholder": "Choose a site area",
+    "createNewSiteArea": "Can't find your site area? Create new site area"
+  },
+  "createSiteArea": {
+    "title": "Create Site Area",
+    "next": "Next",
+    "heading": "Create Site Area",
+    "areaNameLabel": "Area Name",
+    "voltageLabel": "Supply Voltage (V)",
+    "voltagePlaceholder": "Select a voltage",
+    "numberOfPhasesLabel": "Number of Phases",
+    "numberOfPhasesPlaceholder": "Select number of phases",
+    "phaseAssignmentLabel": "Phase Assignment",
+    "phaseAssignmentPlaceholderFirst": "Select number of phases first",
+    "phaseAssignmentPlaceholder": "Select a phase assignment",
+    "ampsPerPhaseLabel": "Amps Per Phase (A)",
+    "maxPowerLabel": "Max Power (KW)",
+    "chooseExisting": "Choose an existing site area instead"
+  },
+  "validateChargerDetails": {
+    "title": "Validate Charger Details",
+    "cancel": "Cancel",
+    "sessionMissing": "Your session is missing the installer details. Please cancel and start again.",
+    "loading": "Loading charger details…",
+    "retry": "Retry",
+    "loadError": "Could not load charger details. Please try again.",
+    "connectorTypeLabel": "Connector Type",
+    "connectorTypeIndexedLabel": "Connector {{index}} Type",
+    "heading": "Validate Charger Details",
+    "chargerIdLabel": "Charger ID",
+    "qrCodeUrlLabel": "QR Code URL",
+    "serialNumberLabel": "Serial Number",
+    "noOfConnectorsLabel": "No. of Connectors",
+    "doNotProceedTitle": "Do not proceed if info is incorrect",
+    "doNotProceedDescription": "If any information is invalid or doesn't match, please contact your CPO for further instructions.",
+    "confirming": "Confirming…",
+    "confirm": "Confirm"
+  },
+  "chargerElectricalInformation": {
+    "title": "Charger Electrical Information",
+    "continue": "Next",
+    "heading": "Charger Electrical Information",
+    "subheading": "Describe the charger's electrical setup. It's checked against the chosen site area.",
+    "alreadyInstalledTitle": "Already installed",
+    "alreadyInstalledDescription": "This charger is already installed. Contact support to change these details.",
+    "noSiteAreaTitle": "No site area selected",
+    "noSiteAreaDescription": "No site area is selected. Please go back and choose one.",
+    "chargerTypeLabel": "Type of Charger",
+    "chargerTypePlaceholder": "Select type of charger",
+    "voltageLabel": "Supply Voltage (V)",
+    "voltagePlaceholder": "Select a voltage",
+    "numberOfPhasesLabel": "Number of Connected Phase",
+    "numberOfPhasesPlaceholder": "Select number of phases",
+    "phaseAssignmentLabel": "Phase Assignment",
+    "phaseAssignmentPlaceholderFirst": "Select number of phases first",
+    "phaseAssignmentPlaceholder": "Select a phase assignment",
+    "ampPerPhaseLabel": "Amp Per Phase (A)",
+    "ampPerPhasePlaceholder": "e.g. 32",
+    "ampPerPhaseTooltip": "The current draw per phase, in amps, that this charger pulls under full load.",
+    "ratedPowerLabel": "Rated Power (kW)",
+    "singlePhase": "Single Phase",
+    "threePhase": "Three Phase"
+  },
+  "connectorInformationDetails": {
+    "title": "Connector Information Details",
+    "missingSessionTitle": "Missing session details",
+    "missingSessionDescription": "Your session is missing the charger or site details. Please cancel and start again.",
+    "cancel": "Cancel",
+    "electricalIncompleteTitle": "Charger electrical details incomplete",
+    "electricalIncompleteDescription": "The charger electrical details are incomplete. Please go back and check them.",
+    "couldntSubmit": "Couldn't submit",
+    "submitFailed": "Failed to install the charger. Please try again.",
+    "submitting": "Submitting…",
+    "continue": "Next",
+    "heading": "Connector Information Details",
+    "subheading": "Describe each connector (plug) on the charger, then submit the whole installation.",
+    "alreadyInstalledTitle": "Already installed",
+    "alreadyInstalledDescription": "This charger is already installed. Contact support to change these details.",
+    "connectorCountLabel": "No. of Connectors",
+    "connectorNeedsAttention": "Connector {{index}} — needs attention",
+    "connectorTitle": "Connector {{index}}",
+    "singlePhase": "Single Phase",
+    "threePhase": "Three Phase",
+    "connectorTypeLabel": "Connector Type",
+    "connectorTypePlaceholder": "Select connector type",
+    "currentTypeLabel": "Current Type",
+    "currentTypeAc": "Alternating Current (AC)",
+    "currentTypeDc": "Direct Current (DC)",
+    "currentTypePlaceholderFirst": "Select connector type first",
+    "currentTypePlaceholder": "Select current type",
+    "numberOfPhasesLabel": "Number of Connected Phase",
+    "numberOfPhasesPlaceholderFirst": "Select current type first",
+    "numberOfPhasesPlaceholder": "Select number of phases",
+    "totalAmperageLabel": "Total Amperage (A)",
+    "totalAmperagePlaceholder": "e.g. 32",
+    "supplyVoltageLabel": "Supply Voltage (V)",
+    "supplyVoltagePlaceholder": "e.g. 230",
+    "phaseAssignmentLabel": "Phase Assignment",
+    "phaseAssignmentPlaceholderFirst": "Select number of phases first",
+    "phaseAssignmentPlaceholder": "Select a phase assignment"
+  },
+  "communicationChecklist": {
+    "title": "Communication Checklist",
+    "next": "Next",
+    "noHeartbeatTitle": "No Heartbeat Received!",
+    "noHeartbeatDescription": "We have not received a heartbeat signal from this charger.",
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "tipNetwork": "Check the communication network.",
+    "tipHardReset": "Perform a hard reset of the charger and wait at least 2 minutes.",
+    "contactCpo": "If the issue persists, contact your CPO at",
+    "heading": "Communication Checklist",
+    "subheading": "Refer to the installation manual and tick completed tasks below.",
+    "allCheckedStatus": "All items checked. You can continue."
+  },
+  "physicalHealthiness": {
+    "title": "Physical Healthiness",
+    "next": "Next",
+    "saving": "Saving…",
+    "heading": "Physical Healthiness",
+    "subheading": "Please validate the following:",
+    "allCheckedStatus": "All items checked. You can continue.",
+    "saveFailedTitle": "Hardware check failed",
+    "sessionExpired": "Your session has expired. Please start again."
+  },
+  "automatedOcppTesting": {
+    "title": "Automated OCPP Testing",
+    "next": "Next",
+    "ocppTestingFailedTitle": "OCPP Testing Failed",
+    "ocppTestingFailedDescription": "We couldn't complete the OCPP test. Please check your network communication.",
+    "failedStepDetail": "{{step}} failed: {{reason}}",
+    "tryAgain": "Try again",
+    "cancel": "Cancel",
+    "contactSupport": "If the problem persists, contact your support team at",
+    "heading": "Automated OCPP Testing",
+    "subheading": "These checks run automatically once you continue.",
+    "stepStatus": {
+      "waiting": "Waiting",
+      "running": "Running",
+      "passed": "Passed",
+      "failed": "Failed"
+    }
+  },
+  "processing": {
+    "sessionExpired": "Your session has expired. Please start again.",
+    "srOnlyHeading": "Processing",
+    "processingAriaLabel": "Processing",
+    "stayMessage": "Please stay on this screen while we complete the process. This may take a few minutes. Do not close or navigate away from the app.",
+    "elapsedLabel": "Elapsed: {{elapsed}}"
+  },
+  "readyToBeCommissioned": {
+    "toastMessage": "{{chargerId}} commissioning complete. Charger is now live.",
+    "title": "Ready to be commissioned",
+    "description": "All tasks are successfully completed",
+    "backToHome": "Back to Home",
+    "subheading": "Charger is Ready for Commissioning. Thank you for completing the installation steps successfully."
+  },
+  "readyToCharge": {
+    "title": "Ready to Charge",
+    "description": "To start charging, download the DynaChrg PayG app from the App Store or Google Play.",
+    "backToHome": "Back to Home",
+    "appStore": "App Store",
+    "googlePlay": "Google Play"
+  },
+  "installationSuccess": {
+    "title": "Installation Success",
+    "heading": "Charger successfully installed",
+    "description": "Congratulations on successfully completing all the setup steps! You can now proceed to the Communication Checklist to ensure everything is connected and ready for use.",
+    "continue": "Next"
+  },
+  "noEvChargerFound": {
+    "title": "No EV Charger Found",
+    "description": "We couldn't find this charger. Check the Charger ID and Token ID, or scan a different QR code.",
+    "tryAgain": "Try again",
+    "backToHome": "Back to Home",
+    "needHelp": "Need help? Call"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "That address doesn't match a step in the install flow. Head back to the start and pick up from there.",
+    "goToHome": "Go to Home"
+  },
+  "chargerCommissioned": {
+    "title": "Charger already commissioned",
+    "description": "This charger has already been commissioned and is live. No further setup is needed.",
+    "backToHome": "Back to Home"
+  },
+  "chargerUnavailable": {
+    "title": "Charger unavailable",
+    "description": "This charger is reporting a fault and can't be installed right now. Contact support for help.",
+    "backToHome": "Back to Home",
+    "needHelp": "Need help? Call"
+  },
+  "help": {
+    "title": "Help & support",
+    "needFurtherAssistance": "Need Further Assistance?"
+  },
+  "splash": {
+    "logoAlt": "DynaChrg Installer"
+  }
+}

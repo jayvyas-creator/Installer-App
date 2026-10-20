@@ -61,4 +61,16 @@ describe("resolveRoute", () => {
       resolveRoute({ status: "Installed", installationStep: null }, { siteAreaCount: 1 }),
     ).toBe("/communication-checklist");
   });
+
+  it("routes a Commissioned charger to the Charger Commissioned screen", () => {
+    expect(
+      resolveRoute({ status: "Commissioned", installationStep: null }, { siteAreaCount: 1 }),
+    ).toBe("/charger-commissioned");
+  });
+
+  it("routes a Faulted charger to the Charger Unavailable screen", () => {
+    expect(
+      resolveRoute({ status: "Faulted", installationStep: null }, { siteAreaCount: 1 }),
+    ).toBe("/charger-unavailable");
+  });
 });

@@ -1,4 +1,5 @@
 import { AlertTriangle } from "lucide-react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./ErrorBanner.module.css";
 
 export interface ErrorBannerProps {
@@ -7,6 +8,12 @@ export interface ErrorBannerProps {
   tone?: "error" | "warning";
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/status-and-feedback/index.canvas.tsx.
+ * If you adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function ErrorBanner({ title, description, tone = "error" }: ErrorBannerProps) {
   return (
     <div className={styles.banner} data-tone={tone} role="alert">
@@ -18,3 +25,9 @@ export function ErrorBanner({ title, description, tone = "error" }: ErrorBannerP
     </div>
   );
 }
+
+defineControls(ErrorBanner, {
+  title: { type: "text" },
+  description: { type: "text" },
+  tone: { type: "select" },
+});

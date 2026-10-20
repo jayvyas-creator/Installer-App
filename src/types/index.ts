@@ -2,9 +2,11 @@
 // backend wire shapes (see src/types/api.ts for that) or form-in-progress
 // state (see the Draft/Data pairs below).
 
+import { findCountryByDialCode } from "@/constants/countries";
+
 export type NumberOfPhases = "single" | "three";
 
-export type PhaseAssignment = "A" | "B" | "C" | "AB" | "BC" | "CA" | "ABC";
+export type PhaseAssignment = "A" | "B" | "C" | "AB" | "BC" | "CA" | "ABC" | "BCA" | "CAB";
 
 export type ChargerType = "AC" | "DC";
 
@@ -24,19 +26,24 @@ export type FailureMode =
   | "STEPFAIL"
   | "INSTALLFAIL"
   | "COMMFAIL"
+  | "COMMTIMEOUT"
   | "NOHEARTBEAT"
   | "HWFAIL"
   | "OCPPFAIL"
+  | "OCPPTIMEOUT"
   | "ACTIVE"
+  | "COMMISSIONED"
+  | "FAULTED"
   | "NOTFOUND"
   | "NONE";
 
-export type OcppStepStatus = "pending" | "running" | "passed" | "failed";
+export type OcppStepStatus = "waiting" | "running" | "passed" | "failed";
 
 export interface OcppStep {
   key: string;
   label: string;
   status: OcppStepStatus;
+  reason?: string;
 }
 
 // Resolved charger record, mapped from ApiChargerLookup (src/api/mappers.ts)
@@ -128,8 +135,18 @@ export function validateInstallerDraft(
   if (!draft.email.trim()) errors.email = "Enter your email address.";
   else if (!EMAIL_PATTERN.test(draft.email.trim())) errors.email = "Enter a valid email address.";
   if (!draft.phoneNumber.trim()) errors.phoneNumber = "Enter your mobile number.";
-  else if (draft.phoneNumber.replace(/\D/g, "").length < 7)
-    errors.phoneNumber = "Enter a valid mobile number.";
+  else {
+    const digits = draft.phoneNumber.replace(/\D/g, "");
+    const country = findCountryByDialCode(draft.countryCode);
+    if (!country) {
+      if (digits.length < 7) errors.phoneNumber = "Enter a valid mobile number.";
+    } else if (digits.length < country.minDigits || digits.length > country.maxDigits) {
+      errors.phoneNumber =
+        country.minDigits === country.maxDigits
+          ? `Enter a ${country.minDigits}-digit mobile number for ${country.name}.`
+          : `Enter a mobile number between ${country.minDigits} and ${country.maxDigits} digits for ${country.name}.`;
+    }
+  }
 
   if (Object.keys(errors).length > 0) return { data: null, errors };
   return {

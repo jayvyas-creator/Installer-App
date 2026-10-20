@@ -57,10 +57,13 @@ export const PHYSICAL_HEALTH_CHECKLIST_ITEMS = [
   { key: "documentation-noted", label: "Documentation noted" },
 ];
 
+// The 4 real OCPP commands the backend runs during the final OCPP check
+// (CLAUDE.md §6, mobile source of truth), replacing an earlier placeholder
+// list of boot/heartbeat/auth/status/transaction steps that never matched
+// what the backend actually sends.
 export const DEFAULT_OCPP_STEPS: OcppStep[] = [
-  { key: "boot", label: "Boot notification", status: "pending" },
-  { key: "heartbeat", label: "Heartbeat exchange", status: "pending" },
-  { key: "auth", label: "Authorization handshake", status: "pending" },
-  { key: "status", label: "Status notification", status: "pending" },
-  { key: "transaction", label: "Mock transaction start/stop", status: "pending" },
+  { key: "getConfiguration", label: "Get Configuration", status: "waiting" },
+  { key: "changeConfiguration", label: "Change Configuration", status: "waiting" },
+  { key: "reset", label: "Reset (Hard)", status: "waiting" },
+  { key: "changeAvailability", label: "Change Availability", status: "waiting" },
 ];

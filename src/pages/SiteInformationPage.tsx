@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
 import { Heading } from "@/components/atoms/Heading";
@@ -16,11 +18,11 @@ function formatNumber(value: number | null, digits = 0): string {
   return value === null || value === undefined ? DASH : value.toFixed(digits);
 }
 
-function formatPhases(count: number | null): string {
-  if (count === 1) return "Single Phase";
-  if (count === 3) return "Three Phase";
+function formatPhases(t: TFunction, count: number | null): string {
+  if (count === 1) return t("siteInformation.singlePhase");
+  if (count === 3) return t("siteInformation.threePhase");
   if (count === null || count === undefined) return DASH;
-  return `${count} Phase`;
+  return t("siteInformation.multiPhase", { count });
 }
 
 // Normalized shape the capacity panel renders, built from either an existing
@@ -36,19 +38,24 @@ interface CapacityView {
 }
 
 function CapacityPanel({ area }: { area: CapacityView }) {
+  const { t } = useTranslation();
   return (
     <div className={formStyles.section}>
-      <span className={formStyles.sectionTitle}>Capacity</span>
-      <ReadOnlyField label="Supply Voltage (V)" value={formatNumber(area.voltage)} />
-      <ReadOnlyField label="Number of Phases" value={area.numberOfPhasesLabel} />
-      <ReadOnlyField label="Max Power (KW)" value={formatNumber(area.maxPowerKw, 2)} />
-      <ReadOnlyField label="Amp Per Phase (A)" value={formatNumber(area.ampPerPhase)} />
-      <ReadOnlyField label="Amp All Phases (A)" value={formatNumber(area.ampAllPhases)} />
+      <span className={formStyles.sectionTitle}>{t("siteInformation.capacityTitle")}</span>
+      <ReadOnlyField label={t("siteInformation.voltageLabel")} value={formatNumber(area.voltage)} />
+      <ReadOnlyField label={t("siteInformation.numberOfPhasesLabel")} value={area.numberOfPhasesLabel} />
+      <ReadOnlyField label={t("siteInformation.maxPowerLabel")} value={formatNumber(area.maxPowerKw, 2)} />
+      <ReadOnlyField label={t("siteInformation.ampPerPhaseLabel")} value={formatNumber(area.ampPerPhase)} />
+      <ReadOnlyField
+        label={t("siteInformation.ampAllPhasesLabel")}
+        value={formatNumber(area.ampAllPhases)}
+      />
     </div>
   );
 }
 
 export function SiteInformationPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setSelectedSiteArea } = useInstallFlow();
 
@@ -66,7 +73,7 @@ export function SiteInformationPage() {
       return {
         name: draft.name,
         voltage: draft.voltage,
-        numberOfPhasesLabel: formatPhases(phases),
+        numberOfPhasesLabel: formatPhases(t, phases),
         maxPowerKw: draft.maxPowerKw,
         ampPerPhase: draft.ampsPerPhase,
         ampAllPhases: draft.ampsPerPhase * phases,
@@ -81,7 +88,7 @@ export function SiteInformationPage() {
     return {
       name: existing.siteAreaName,
       voltage: existing.voltage,
-      numberOfPhasesLabel: formatPhases(existing.numberOfPhases),
+      numberOfPhasesLabel: formatPhases(t, existing.numberOfPhases),
       maxPowerKw: existing.maxPower,
       ampPerPhase: existing.maxAmp,
       ampAllPhases,
@@ -122,25 +129,25 @@ export function SiteInformationPage() {
     const lockedArea = resolveSiteArea(session.selectedSiteAreaId);
     return (
       <AppLayout
-        title="Site Information"
+        title={t("siteInformation.title")}
         onBack={handleBack}
         stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
         footer={
           <Button fullWidth onClick={handleContinue}>
-            Next
+            {t("siteInformation.next")}
           </Button>
         }
       >
         <div className={formStyles.stack}>
           <ErrorBanner
             tone="warning"
-            title="Already installed"
-            description="This charger is already installed. Contact support to change these details."
+            title={t("siteInformation.alreadyInstalledTitle")}
+            description={t("siteInformation.alreadyInstalledDescription")}
           />
           {lockedArea ? (
             <CapacityPanel area={lockedArea} />
           ) : (
-            <p className={formStyles.subheading}>Site area details aren't available for this session.</p>
+            <p className={formStyles.subheading}>{t("siteInformation.detailsUnavailable")}</p>
           )}
         </div>
       </AppLayout>
@@ -151,18 +158,20 @@ export function SiteInformationPage() {
     const area = resolveSiteArea(siteAreas[0].siteAreaId);
     return (
       <AppLayout
-        title="Site Information"
+        title={t("siteInformation.title")}
         onBack={handleBack}
         stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
         footer={
           <Button fullWidth onClick={handleContinue}>
-            Next
+            {t("siteInformation.next")}
           </Button>
         }
       >
         <div className={formStyles.stack}>
-          <Heading level={1}>Site: {siteName}</Heading>
-          <Heading level={2}>Site Area: {area?.name ?? siteAreas[0].siteAreaName}</Heading>
+          <Heading level={1}>{t("siteInformation.siteHeading", { siteName })}</Heading>
+          <Heading level={2}>
+            {t("siteInformation.siteAreaHeading", { areaName: area?.name ?? siteAreas[0].siteAreaName })}
+          </Heading>
           {area && <CapacityPanel area={area} />}
         </div>
       </AppLayout>
@@ -176,21 +185,21 @@ export function SiteInformationPage() {
 
   return (
     <AppLayout
-      title="Site Information"
+      title={t("siteInformation.title")}
       onBack={handleBack}
       stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
       footer={
         <Button fullWidth disabled={!pendingSelection} onClick={handleContinue}>
-          Next
+          {t("siteInformation.next")}
         </Button>
       }
     >
       <div className={formStyles.stack}>
-        <Heading level={1}>Site: {siteName}</Heading>
+        <Heading level={1}>{t("siteInformation.siteHeading", { siteName })}</Heading>
 
         <SelectField<string>
-          label="Select Site Area"
-          placeholder="Choose a site area"
+          label={t("siteInformation.selectSiteAreaLabel")}
+          placeholder={t("siteInformation.selectSiteAreaPlaceholder")}
           options={options}
           value={pendingSelection}
           onValueChange={setPendingSelection}
@@ -200,7 +209,7 @@ export function SiteInformationPage() {
         {selectedArea && <CapacityPanel area={selectedArea} />}
 
         <button type="button" className={formStyles.dashedAddRow} onClick={() => navigate("/site-area/new")}>
-          Can't find your site area? Create new site area
+          {t("siteInformation.createNewSiteArea")}
         </button>
       </div>
     </AppLayout>

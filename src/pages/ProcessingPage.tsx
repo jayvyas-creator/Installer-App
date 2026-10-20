@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Zap } from "lucide-react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { PulsingBadge } from "@/components/atoms/PulsingBadge";
 import { Wordmark } from "@/components/atoms/Wordmark";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { useCommissioningCheck } from "@/hooks/useCommissioningCheck";
+import { useOcppStepRunner } from "@/hooks/useOcppStepRunner";
 import { useHistorySync } from "@/navigation/useHistorySync";
 import { commissioningFlow } from "@/flows/commissioningFlow";
 import type { InstallSession } from "@/state/InstallFlowContext";
@@ -29,16 +32,19 @@ function derivePlan(session: InstallSession): { installationStep: string; failur
 }
 
 export function ProcessingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const goHome = useHistorySync();
-  const { session, setStatus } = useInstallFlow();
+  const { session, setStatus, setOcppSteps } = useInstallFlow();
   const hasSession = Boolean(session.chargerId && session.installerToken);
   const plan = derivePlan(session);
+  const isOcppCheck = plan.installationStep === "OcppCheckComplete";
+  const { markFailedStep } = useOcppStepRunner({ active: isOcppCheck, setSteps: setOcppSteps });
 
   const { elapsedLabel, result } = useCommissioningCheck({
     run: () => {
       if (!session.installerToken) {
-        return Promise.resolve({ ok: false as const, error: "Your session has expired. Please start again." });
+        return Promise.resolve({ ok: false as const, error: t("processing.sessionExpired") });
       }
       return commissioningFlow(
         session.chargerId,
@@ -72,6 +78,7 @@ export function ProcessingPage() {
       // (DESIGN-HANDOFF.md §4, "no way out" while a check runs).
       navigate(result.data, { replace: true });
     } else {
+      if (isOcppCheck) markFailedStep(result.error);
       navigate(plan.failureRoute, { replace: true, state: { checkError: result.error } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,16 +89,14 @@ export function ProcessingPage() {
   return (
     <AppShell showHelp={false}>
       <div className={outcomeStyles.wrap}>
-        <h1 className="sr-only">Processing</h1>
-        <PulsingBadge aria-label="Processing">
-          <Wordmark size="lg" />
+        <h1 className="sr-only">{t("processing.srOnlyHeading")}</h1>
+        <Wordmark size="md" />
+        <PulsingBadge aria-label={t("processing.processingAriaLabel")}>
+          <Zap size={28} />
         </PulsingBadge>
         <div>
-          <p className={styles.label}>
-            Please stay on this screen while we complete the process. This may take a few
-            minutes. Do not close or navigate away from the app.
-          </p>
-          <p className={styles.sublabel}>Elapsed: {elapsedLabel}</p>
+          <p className={styles.label}>{t("processing.stayMessage")}</p>
+          <p className={styles.sublabel}>{t("processing.elapsedLabel", { elapsed: elapsedLabel })}</p>
         </div>
       </div>
     </AppShell>

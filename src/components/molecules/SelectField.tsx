@@ -1,5 +1,12 @@
 import { Select, type SelectOption, type SelectProps } from "@/components/atoms/Select";
+import { defineControls } from "tempo-sdk/assets";
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/form-fields/index.canvas.tsx. If you adjust
+ * this component in any way, ensure the canvas and its asset declaration
+ * stay consistent.
+ */
 export interface SelectFieldOption<T extends string> {
   value: T;
   label: string;
@@ -31,3 +38,15 @@ export function SelectField<T extends string>({
     />
   );
 }
+
+defineControls(SelectField, {
+  label: { type: "text" },
+  placeholder: { type: "text" },
+  helperText: { type: "text" },
+  errorText: { type: "text" },
+  required: { type: "boolean" },
+  disabled: { type: "boolean" },
+  options: false,
+  value: false,
+  onValueChange: false,
+});

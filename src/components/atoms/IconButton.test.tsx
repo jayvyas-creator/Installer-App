@@ -46,4 +46,18 @@ describe("IconButton", () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("renders its child element instead of a button when asChild is set", () => {
+    render(
+      <IconButton aria-label="Close" asChild>
+        <a href="/home">
+          <X />
+        </a>
+      </IconButton>,
+    );
+    const link = screen.getByRole("link", { name: "Close" });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/home");
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
 });

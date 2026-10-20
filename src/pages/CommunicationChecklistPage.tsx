@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { ChecklistItem } from "@/components/molecules/ChecklistItem";
@@ -22,6 +23,7 @@ interface CommunicationChecklistLocationState {
 // every failure", so any error Processing bounces back with lands here
 // verbatim, not just a literal heartbeat timeout.
 export function CommunicationChecklistPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const go = useHistorySync();
   const location = useLocation();
@@ -46,13 +48,13 @@ export function CommunicationChecklistPage() {
 
   return (
     <AppShell
-      title="Communication Checklist"
+      title={t("communicationChecklist.title")}
       onBack={() => go("/installation-success")}
       stepper={{ steps: FLOW_STEPS, currentIndex: 6 }}
       footer={
         !checkError && (
           <Button fullWidth size="lg" disabled={!allChecked} onClick={() => go("/processing")}>
-            Next
+            {t("communicationChecklist.next")}
           </Button>
         )
       }
@@ -61,18 +63,18 @@ export function CommunicationChecklistPage() {
         <div className={outcomeStyles.wrap}>
           <OutcomePanel
             tone="error"
-            title="No Heartbeat Received!"
-            description="We have not received a heartbeat signal from this charger."
-            primaryAction={{ label: "Try again", onClick: () => go("/processing") }}
-            secondaryAction={{ label: "Cancel", onClick: () => setCheckError(null) }}
+            title={t("communicationChecklist.noHeartbeatTitle")}
+            description={t("communicationChecklist.noHeartbeatDescription")}
+            primaryAction={{ label: t("communicationChecklist.tryAgain"), onClick: () => go("/processing") }}
+            secondaryAction={{ label: t("communicationChecklist.cancel"), onClick: () => setCheckError(null) }}
           >
             <p className={styles.detailLine}>{checkError}</p>
             <ul className={styles.tipsList}>
-              <li>Check the communication network.</li>
-              <li>Perform a hard reset of the charger and wait at least 2 minutes.</li>
+              <li>{t("communicationChecklist.tipNetwork")}</li>
+              <li>{t("communicationChecklist.tipHardReset")}</li>
             </ul>
             <p className={styles.footerNote}>
-              If the issue persists, contact your CPO at{" "}
+              {t("communicationChecklist.contactCpo")}{" "}
               <a href="tel:+13234882092">(323) 488-2092</a>
             </p>
           </OutcomePanel>
@@ -80,10 +82,8 @@ export function CommunicationChecklistPage() {
       ) : (
         <div className={formStyles.stack}>
           <div className={formStyles.intro}>
-            <h1 className={formStyles.heading}>Communication Checklist</h1>
-            <p className={formStyles.subheading}>
-              Refer to the installation manual and tick completed tasks below.
-            </p>
+            <h1 className={formStyles.heading}>{t("communicationChecklist.heading")}</h1>
+            <p className={formStyles.subheading}>{t("communicationChecklist.subheading")}</p>
           </div>
 
           <div className={formStyles.list}>
@@ -99,7 +99,7 @@ export function CommunicationChecklistPage() {
           </div>
 
           <span className="sr-only" role="status" aria-live="polite">
-            {allChecked ? "All items checked. You can continue." : ""}
+            {allChecked ? t("communicationChecklist.allCheckedStatus") : ""}
           </span>
         </div>
       )}

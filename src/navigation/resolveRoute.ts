@@ -15,6 +15,8 @@ export function resolveRoute(status: ChargerStatusResponse, context: RouteContex
 
   if (chargerStatus === "Active") return "/ready-to-charge";
   if (chargerStatus === "Connected") return "/ready-to-be-commissioned";
+  if (chargerStatus === "Commissioned") return "/charger-commissioned";
+  if (chargerStatus === "Faulted") return "/charger-unavailable";
 
   if (chargerStatus === "Registered") {
     if (installationStep === "CDCheckComplete") {

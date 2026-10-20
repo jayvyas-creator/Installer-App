@@ -8,6 +8,8 @@ import { SplashPage } from "@/pages/SplashPage";
 import { HomePage } from "@/pages/HomePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { NoEvChargerFoundPage } from "@/pages/NoEvChargerFoundPage";
+import { ChargerCommissionedPage } from "@/pages/ChargerCommissionedPage";
+import { ChargerUnavailablePage } from "@/pages/ChargerUnavailablePage";
 import { ValidateChargerDetailsPage } from "@/pages/ValidateChargerDetailsPage";
 import { InstallerInformationPage } from "@/pages/InstallerInformationPage";
 import { EnterTokenIdPage } from "@/pages/EnterTokenIdPage";
@@ -69,6 +71,8 @@ function AnimatedRoutes() {
         <Route path="/splash" element={<PageTransition ease="expo"><SplashPage /></PageTransition>} />
         <Route path="/" element={<PageTransition><RootRoute /></PageTransition>} />
         <Route path="/no-charger-found" element={<PageTransition><NoEvChargerFoundPage /></PageTransition>} />
+        <Route path="/charger-commissioned" element={<PageTransition><ChargerCommissionedPage /></PageTransition>} />
+        <Route path="/charger-unavailable" element={<PageTransition><ChargerUnavailablePage /></PageTransition>} />
         <Route path="/validate-charger-details" element={<PageTransition><ValidateChargerDetailsPage /></PageTransition>} />
         <Route path="/installer-info" element={<PageTransition><InstallerInformationPage /></PageTransition>} />
         <Route path="/enter-token" element={<PageTransition><EnterTokenIdPage /></PageTransition>} />

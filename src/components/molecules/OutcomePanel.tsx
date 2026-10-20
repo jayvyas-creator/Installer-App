@@ -1,5 +1,6 @@
 import { AlertTriangle, XCircle } from "lucide-react";
 import type { ReactNode } from "react";
+import { defineControls } from "tempo-sdk/assets";
 import { Button } from "@/components/atoms/Button";
 import { ProgressRing } from "@/components/atoms/ProgressRing";
 import { SuccessCheck } from "@/components/atoms/SuccessCheck";
@@ -35,6 +36,12 @@ function ToneIcon({ tone }: { tone: OutcomeTone }) {
   }
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/status-and-feedback/index.canvas.tsx.
+ * If you adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function OutcomePanel({
   tone,
   title,
@@ -73,3 +80,14 @@ export function OutcomePanel({
     </div>
   );
 }
+
+defineControls(OutcomePanel, {
+  tone: { type: "select" },
+  title: { type: "text" },
+  description: { type: "text" },
+  // Both actions carry a required onClick — not an editable control type, so
+  // the whole action object stays curated via defineAsset variants instead.
+  primaryAction: false,
+  secondaryAction: false,
+  children: false,
+});

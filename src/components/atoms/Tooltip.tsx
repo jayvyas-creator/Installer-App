@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { useId, useState } from "react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./Tooltip.module.css";
 
 export interface TooltipProps {
@@ -9,6 +10,11 @@ export interface TooltipProps {
 // Note: the trigger icon is 16px today, below the 44x44 touch-target minimum
 // DESIGN-HANDOFF.md §4 calls for — flagged there as a known gap to fix, not
 // silently "fixed" here with an oversized hit target that would look wrong.
+//
+// The canvas for this component is at
+// tempo/designs/design-system/status-and-feedback/index.canvas.tsx.
+// If you adjust this component in any way, ensure the canvas and its asset
+// declaration stay consistent.
 export function Tooltip({ text }: TooltipProps) {
   const [open, setOpen] = useState(false);
   const id = useId();
@@ -36,3 +42,7 @@ export function Tooltip({ text }: TooltipProps) {
     </span>
   );
 }
+
+defineControls(Tooltip, {
+  text: { type: "text" },
+});

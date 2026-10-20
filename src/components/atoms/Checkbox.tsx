@@ -1,7 +1,14 @@
 import { Check } from "lucide-react";
 import { useId, type InputHTMLAttributes, type Ref } from "react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./Checkbox.module.css";
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/form-fields/index.canvas.tsx. If you adjust
+ * this component in any way, ensure the canvas and its asset declaration
+ * stay consistent.
+ */
 export interface CheckboxProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "id" | "type"> {
   checked: boolean;
@@ -29,3 +36,9 @@ export function Checkbox({ checked, disabled, className, ref, ...rest }: Checkbo
     </span>
   );
 }
+
+defineControls(Checkbox, {
+  checked: { type: "boolean" },
+  disabled: { type: "boolean" },
+  onChange: false,
+});

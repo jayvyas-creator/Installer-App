@@ -1,5 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./CollapsiblePanel.module.css";
 
 export interface CollapsiblePanelProps {
@@ -8,6 +9,12 @@ export interface CollapsiblePanelProps {
   defaultOpen?: boolean;
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/progress-and-flow/index.canvas.tsx. If you
+ * adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function CollapsiblePanel({ trigger, children, defaultOpen = false }: CollapsiblePanelProps) {
   const [open, setOpen] = useState(defaultOpen);
   const contentId = useId();
@@ -32,3 +39,8 @@ export function CollapsiblePanel({ trigger, children, defaultOpen = false }: Col
     </div>
   );
 }
+
+defineControls(CollapsiblePanel, {
+  trigger: { type: "text" },
+  defaultOpen: { type: "boolean" },
+});

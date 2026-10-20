@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ProgressRing } from "@/components/atoms/ProgressRing";
 import dynachrgLogo from "@/assets/dynachrg-logo.png";
 import styles from "./SplashPage.module.css";
@@ -12,6 +13,7 @@ import styles from "./SplashPage.module.css";
 const SPLASH_HOLD_MS = 560;
 
 export function SplashPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export function SplashPage() {
 
   return (
     <div className={styles.wrap}>
-      <img className={styles.logoMark} src={dynachrgLogo} alt="DynaChrg Installer" />
+      <img className={styles.logoMark} src={dynachrgLogo} alt={t("splash.logoAlt")} />
       <div className={styles.ring}>
         <ProgressRing size={28} strokeWidth={3} tone="brand" />
       </div>

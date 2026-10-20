@@ -1,3 +1,4 @@
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./Wordmark.module.css";
 
 export interface WordmarkProps {
@@ -5,6 +6,10 @@ export interface WordmarkProps {
   className?: string;
 }
 
+// The canvas for this component is at
+// tempo/designs/design-system/typography-and-brand/index.canvas.tsx. If you
+// adjust this component in any way, ensure the canvas and its asset
+// declaration stay consistent.
 export function Wordmark({ size = "md", className }: WordmarkProps) {
   return (
     <span className={[styles.wordmark, styles[size], className ?? ""].filter(Boolean).join(" ")}>
@@ -12,3 +17,8 @@ export function Wordmark({ size = "md", className }: WordmarkProps) {
     </span>
   );
 }
+
+defineControls(Wordmark, {
+  size: { type: "select" },
+  className: false,
+});

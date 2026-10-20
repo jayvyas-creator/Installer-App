@@ -53,7 +53,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "The app says this charger is already commissioned. What now?",
         answer:
-          "That charger is already live. You'll be routed straight to the Ready to Charge screen — no further setup is needed.",
+          "That charger has already been commissioned and is live elsewhere. You'll be routed to a dedicated screen confirming this — no further setup is needed on this device.",
       },
       {
         question: "Who do I contact for hardware issues the checklist flags?",

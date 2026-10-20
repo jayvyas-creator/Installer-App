@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/templates/AppLayout";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
 import { useInstallFlow } from "@/state/InstallFlowContext";
@@ -7,6 +8,7 @@ import { useHistorySync } from "@/navigation/useHistorySync";
 // the backend rejected the charger or token. resolveRoute sends both
 // EnterTokenIdPage's lookup failure and any unrecognised backend status here.
 export function NoEvChargerFoundPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { reset } = useInstallFlow();
 
@@ -14,14 +16,14 @@ export function NoEvChargerFoundPage() {
     <AppLayout showHelp>
       <OutcomePanel
         tone="error"
-        title="No EV Charger Found"
-        description="We couldn't find this charger. Check the Charger ID and Token ID, or scan a different QR code."
+        title={t("noEvChargerFound.title")}
+        description={t("noEvChargerFound.description")}
         primaryAction={{
-          label: "Try again",
+          label: t("noEvChargerFound.tryAgain"),
           onClick: () => navigate("/enter-token"),
         }}
         secondaryAction={{
-          label: "Back to Home",
+          label: t("noEvChargerFound.backToHome"),
           onClick: () => {
             reset();
             navigate("/");
@@ -29,7 +31,7 @@ export function NoEvChargerFoundPage() {
         }}
       >
         <p>
-          Need help? Call{" "}
+          {t("noEvChargerFound.needHelp")}{" "}
           <a href="tel:+13234882846">+1 323-488-2846</a>
         </p>
       </OutcomePanel>

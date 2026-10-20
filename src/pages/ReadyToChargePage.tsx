@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
 import { useInstallFlow } from "@/state/InstallFlowContext";
@@ -12,6 +13,7 @@ const APP_STORE_URL = "https://apps.apple.com/app/dynachrg-payg";
 const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.dynachrg.payg";
 
 export function ReadyToChargePage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { reset } = useInstallFlow();
 
@@ -21,20 +23,20 @@ export function ReadyToChargePage() {
   }
 
   return (
-    <AppShell title="Ready to Charge" backDisabled showHelp={false}>
+    <AppShell title={t("readyToCharge.title")} backDisabled showHelp={false}>
       <div className={styles.wrap}>
         <OutcomePanel
           tone="success"
-          title="Ready to Charge"
-          description="To start charging, download the DynaChrg PayG app from the App Store or Google Play."
-          primaryAction={{ label: "Back to Home", onClick: handleBackToHome }}
+          title={t("readyToCharge.title")}
+          description={t("readyToCharge.description")}
+          primaryAction={{ label: t("readyToCharge.backToHome"), onClick: handleBackToHome }}
         >
           <div className={pageStyles.storeLinks}>
             <a className={pageStyles.storeLink} href={APP_STORE_URL} target="_blank" rel="noreferrer">
-              App Store
+              {t("readyToCharge.appStore")}
             </a>
             <a className={pageStyles.storeLink} href={GOOGLE_PLAY_URL} target="_blank" rel="noreferrer">
-              Google Play
+              {t("readyToCharge.googlePlay")}
             </a>
           </div>
         </OutcomePanel>

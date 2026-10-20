@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Select } from "@/components/atoms/Select";
@@ -14,6 +15,7 @@ import {
   currentTypeOptionsForConnector,
   numberOfPhasesOptionsForConnector,
   phaseAssignmentOptionsForConnector,
+  labelForPhaseAssignment,
 } from "@/constants/electrical";
 import {
   connectorDraftNeedsAttention,
@@ -77,6 +79,7 @@ function seedInitialDrafts(
 }
 
 export function ConnectorInformationDetailsPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setConnectorDrafts, markInstalled, reset } = useInstallFlow();
 
@@ -154,7 +157,7 @@ export function ConnectorInformationDetailsPage() {
 
     setSubmitting(false);
     if (!result.ok) {
-      setSubmitError(result.error || "Failed to install the charger. Please try again.");
+      setSubmitError(result.error || t("connectorInformationDetails.submitFailed"));
       return;
     }
 
@@ -171,15 +174,19 @@ export function ConnectorInformationDetailsPage() {
   // Session errors replace the whole form (DESIGN-HANDOFF.md §2.7).
   if (!hasCoreSession) {
     return (
-      <AppShell title="Connector Information Details" backDisabled stepper={{ steps: FLOW_STEPS, currentIndex: 5 }}>
+      <AppShell
+        title={t("connectorInformationDetails.title")}
+        backDisabled
+        stepper={{ steps: FLOW_STEPS, currentIndex: 5 }}
+      >
         <div className={formStyles.stack}>
           <ErrorBanner
             tone="error"
-            title="Missing session details"
-            description="Your session is missing the charger or site details. Please cancel and start again."
+            title={t("connectorInformationDetails.missingSessionTitle")}
+            description={t("connectorInformationDetails.missingSessionDescription")}
           />
           <Button fullWidth size="lg" variant="secondary" onClick={handleCancel}>
-            Cancel
+            {t("connectorInformationDetails.cancel")}
           </Button>
         </div>
       </AppShell>
@@ -189,15 +196,15 @@ export function ConnectorInformationDetailsPage() {
   if (chargerElectricalMissing) {
     return (
       <AppShell
-        title="Connector Information Details"
+        title={t("connectorInformationDetails.title")}
         onBack={() => navigate("/charger-electrical")}
         stepper={{ steps: FLOW_STEPS, currentIndex: 5 }}
       >
         <div className={formStyles.stack}>
           <ErrorBanner
             tone="error"
-            title="Charger electrical details incomplete"
-            description="The charger electrical details are incomplete. Please go back and check them."
+            title={t("connectorInformationDetails.electricalIncompleteTitle")}
+            description={t("connectorInformationDetails.electricalIncompleteDescription")}
           />
         </div>
       </AppShell>
@@ -206,13 +213,19 @@ export function ConnectorInformationDetailsPage() {
 
   return (
     <AppShell
-      title="Connector Information Details"
+      title={t("connectorInformationDetails.title")}
       onBack={submitting ? undefined : () => navigate("/charger-electrical")}
       backDisabled={submitting}
       stepper={{ steps: FLOW_STEPS, currentIndex: 5 }}
       footer={
         <div className={formStyles.stack}>
-          {submitError && <ErrorBanner tone="error" title="Couldn't submit" description={submitError} />}
+          {submitError && (
+            <ErrorBanner
+              tone="error"
+              title={t("connectorInformationDetails.couldntSubmit")}
+              description={submitError}
+            />
+          )}
           <Button
             fullWidth
             size="lg"
@@ -220,30 +233,28 @@ export function ConnectorInformationDetailsPage() {
             disabled={(!locked && !allValid) || submitting}
             onClick={handleSubmit}
           >
-            {submitting ? "Submitting…" : "Continue"}
+            {submitting ? t("connectorInformationDetails.submitting") : t("connectorInformationDetails.continue")}
           </Button>
         </div>
       }
     >
       <div className={formStyles.stack}>
         <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Connector Information Details</h1>
-          <p className={formStyles.subheading}>
-            Describe each connector (plug) on the charger, then submit the whole installation.
-          </p>
+          <h1 className={formStyles.heading}>{t("connectorInformationDetails.heading")}</h1>
+          <p className={formStyles.subheading}>{t("connectorInformationDetails.subheading")}</p>
         </div>
 
         {locked && (
           <ErrorBanner
             tone="warning"
-            title="Already installed"
-            description="This charger is already installed. Contact support to change these details."
+            title={t("connectorInformationDetails.alreadyInstalledTitle")}
+            description={t("connectorInformationDetails.alreadyInstalledDescription")}
           />
         )}
 
         {!locked && (
           <Select
-            label="No. of Connectors"
+            label={t("connectorInformationDetails.connectorCountLabel")}
             value={String(drafts.length)}
             onChange={(event) => updateConnectorCount(Number(event.target.value))}
             options={CONNECTOR_COUNT_OPTIONS}
@@ -277,7 +288,11 @@ export function ConnectorInformationDetailsPage() {
                 }}
               >
                 <CollapsiblePanel
-                  trigger={needsAttention ? `Connector ${index + 1} — needs attention` : `Connector ${index + 1}`}
+                  trigger={
+                    needsAttention
+                      ? t("connectorInformationDetails.connectorNeedsAttention", { index: index + 1 })
+                      : t("connectorInformationDetails.connectorTitle", { index: index + 1 })
+                  }
                   defaultOpen={index === 0}
                 >
                   <div className={formStyles.stack}>
@@ -285,7 +300,13 @@ export function ConnectorInformationDetailsPage() {
                       <div className={formStyles.fieldGrid}>
                         <span>{draft.connectorType || "—"}</span>
                         <span>{draft.currentType || "—"}</span>
-                        <span>{draft.numberOfPhases === "three" ? "Three Phase" : draft.numberOfPhases === "single" ? "Single Phase" : "—"}</span>
+                        <span>
+                          {draft.numberOfPhases === "three"
+                            ? t("connectorInformationDetails.threePhase")
+                            : draft.numberOfPhases === "single"
+                              ? t("connectorInformationDetails.singlePhase")
+                              : "—"}
+                        </span>
                         <span>{draft.totalAmperage ? `${draft.totalAmperage}A` : "—"}</span>
                         <span>{draft.supplyVoltage ? `${draft.supplyVoltage}V` : "—"}</span>
                         <span>{draft.phaseAssignment || "—"}</span>
@@ -293,67 +314,91 @@ export function ConnectorInformationDetailsPage() {
                     ) : (
                       <>
                         <SelectField<ConnectorType>
-                          label="Connector Type"
-                          options={typeOptions.map((t) => ({ value: t, label: t }))}
+                          label={t("connectorInformationDetails.connectorTypeLabel")}
+                          options={typeOptions.map((type) => ({ value: type, label: type }))}
                           value={draft.connectorType}
                           onValueChange={(value) => updateConnector(index, { connectorType: value })}
-                          placeholder="Select connector type"
+                          placeholder={t("connectorInformationDetails.connectorTypePlaceholder")}
                           required
                           errorText={draft.connectorType !== "" ? fieldErrors.connectorType : undefined}
                         />
 
                         <SelectField<ConnectorCurrentType>
-                          label="Current Type"
-                          options={currentOptions.map((t) => ({ value: t, label: t === "AC" ? "Alternating Current (AC)" : "Direct Current (DC)" }))}
+                          label={t("connectorInformationDetails.currentTypeLabel")}
+                          options={currentOptions.map((type) => ({
+                            value: type,
+                            label:
+                              type === "AC"
+                                ? t("connectorInformationDetails.currentTypeAc")
+                                : t("connectorInformationDetails.currentTypeDc"),
+                          }))}
                           value={draft.currentType}
                           onValueChange={(value) => updateConnector(index, { currentType: value })}
-                          placeholder={draft.connectorType === "" ? "Select connector type first" : "Select current type"}
+                          placeholder={
+                            draft.connectorType === ""
+                              ? t("connectorInformationDetails.currentTypePlaceholderFirst")
+                              : t("connectorInformationDetails.currentTypePlaceholder")
+                          }
                           disabled={draft.connectorType === ""}
                           required
                           errorText={draft.currentType !== "" ? fieldErrors.currentType : undefined}
                         />
 
                         <SelectField<NumberOfPhases>
-                          label="Number of Connected Phase"
-                          options={phaseCountOptions.map((p) => ({ value: p, label: p === "three" ? "Three Phase" : "Single Phase" }))}
+                          label={t("connectorInformationDetails.numberOfPhasesLabel")}
+                          options={phaseCountOptions.map((p) => ({
+                            value: p,
+                            label:
+                              p === "three"
+                                ? t("connectorInformationDetails.threePhase")
+                                : t("connectorInformationDetails.singlePhase"),
+                          }))}
                           value={draft.numberOfPhases}
                           onValueChange={(value) => updateConnector(index, { numberOfPhases: value })}
-                          placeholder={draft.currentType === "" ? "Select current type first" : "Select number of phases"}
+                          placeholder={
+                            draft.currentType === ""
+                              ? t("connectorInformationDetails.numberOfPhasesPlaceholderFirst")
+                              : t("connectorInformationDetails.numberOfPhasesPlaceholder")
+                          }
                           disabled={draft.currentType === ""}
                           required
                           errorText={draft.numberOfPhases !== "" ? fieldErrors.numberOfPhases : undefined}
                         />
 
                         <Input
-                          label="Total Amperage (A)"
+                          label={t("connectorInformationDetails.totalAmperageLabel")}
                           value={draft.totalAmperage}
                           onChange={(event) =>
                             updateConnector(index, { totalAmperage: event.target.value.replace(/\D/g, "").slice(0, 4) })
                           }
                           inputMode="numeric"
-                          placeholder="e.g. 32"
+                          placeholder={t("connectorInformationDetails.totalAmperagePlaceholder")}
                           required
                           errorText={draft.totalAmperage.trim() !== "" ? fieldErrors.totalAmperage : undefined}
                         />
 
                         <Input
-                          label="Supply Voltage (V)"
+                          label={t("connectorInformationDetails.supplyVoltageLabel")}
                           value={draft.supplyVoltage}
                           onChange={(event) =>
                             updateConnector(index, { supplyVoltage: event.target.value.replace(/\D/g, "").slice(0, 4) })
                           }
                           inputMode="numeric"
-                          placeholder="e.g. 230"
+                          placeholder={t("connectorInformationDetails.supplyVoltagePlaceholder")}
                           required
                           errorText={draft.supplyVoltage.trim() !== "" ? fieldErrors.supplyVoltage : undefined}
                         />
 
                         <SelectField<PhaseAssignment>
-                          label="Phase Assignment"
-                          options={assignmentOptions.map((pa) => ({ value: pa, label: pa }))}
+                          label={t("connectorInformationDetails.phaseAssignmentLabel")}
+                          options={assignmentOptions.map((pa) => ({ value: pa, label: labelForPhaseAssignment(pa) }))}
                           value={draft.phaseAssignment}
                           onValueChange={(value) => updateConnector(index, { phaseAssignment: value })}
-                          placeholder={draft.numberOfPhases === "" ? "Select number of phases first" : "Select a phase assignment"}
+                          placeholder={
+                            draft.numberOfPhases === ""
+                              ? t("connectorInformationDetails.phaseAssignmentPlaceholderFirst")
+                              : t("connectorInformationDetails.phaseAssignmentPlaceholder")
+                          }
                           disabled={draft.numberOfPhases === ""}
                           required
                           errorText={draft.phaseAssignment !== "" ? fieldErrors.phaseAssignment : undefined}

@@ -35,10 +35,14 @@ function resolveFailureMode(chargerId: string): FailureMode {
     "ONEAREA",
     "STEPFAIL",
     "INSTALLFAIL",
+    "COMMTIMEOUT",
     "COMMFAIL",
     "HWFAIL",
+    "OCPPTIMEOUT",
     "OCPPFAIL",
     "ACTIVE",
+    "COMMISSIONED",
+    "FAULTED",
   ];
   for (const mode of known) {
     if (normalized.includes(mode)) return mode;
@@ -107,8 +111,16 @@ function getOrCreateRecord(chargerId: string): MockChargerRecord {
   let record = store.get(key);
   if (!record) {
     const failureMode = resolveFailureMode(chargerId);
+    const initialStatus: ChargerStatus =
+      failureMode === "ACTIVE"
+        ? "Active"
+        : failureMode === "COMMISSIONED"
+          ? "Commissioned"
+          : failureMode === "FAULTED"
+            ? "Faulted"
+            : "Registered";
     record = {
-      status: failureMode === "ACTIVE" ? "Active" : "Registered",
+      status: initialStatus,
       installationStep: null,
       siteAreas: buildInitialSiteAreas(failureMode),
       failureMode,
@@ -156,11 +168,17 @@ export async function mockPostStatus(
   if (record.failureMode === "STEPFAIL") {
     return { ok: false, error: "Could not update the installation status. Please try again." };
   }
+  if (installationStep === "ChargerCommCheckComplete" && record.failureMode === "COMMTIMEOUT") {
+    return new Promise(() => {});
+  }
   if (installationStep === "ChargerCommCheckComplete" && record.failureMode === "COMMFAIL") {
     return { ok: false, error: "We have not received a heartbeat signal from this charger." };
   }
   if (installationStep === "ChargerHWCheckComplete" && record.failureMode === "HWFAIL") {
     return { ok: false, error: "The hardware check did not complete successfully." };
+  }
+  if (installationStep === "OcppCheckComplete" && record.failureMode === "OCPPTIMEOUT") {
+    return new Promise(() => {});
   }
   if (installationStep === "OcppCheckComplete" && record.failureMode === "OCPPFAIL") {
     return { ok: false, error: "We couldn't complete the OCPP test. Please check your network communication." };

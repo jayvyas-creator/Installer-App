@@ -3,7 +3,13 @@
 // headers and forwarded the upstream JSON — see src/api/normalize.ts for how
 // the two documented envelope shapes collapse into these.
 
-export type ChargerStatus = "Registered" | "Installed" | "Connected" | "Active";
+export type ChargerStatus =
+  | "Registered"
+  | "Installed"
+  | "Connected"
+  | "Active"
+  | "Commissioned"
+  | "Faulted";
 
 // null = status just reached (no step taken yet at that status).
 export type InstallationStep =

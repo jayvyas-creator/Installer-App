@@ -1,5 +1,7 @@
+import { Slot } from "@radix-ui/react-slot";
 import { Loader2 } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./Button.module.css";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -16,8 +18,20 @@ export interface ButtonProps
   trailingIcon?: ReactNode;
   children: ReactNode;
   ref?: Ref<HTMLButtonElement>;
+  /**
+   * Merge the button's classes and props onto a single child element (e.g. a router `Link`
+   * or `<a>`) instead of rendering a `<button>`. The child renders as-is — icon slots and the
+   * loading spinner are skipped, since there's no longer a fixed internal markup to place them in.
+   */
+  asChild?: boolean;
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/buttons-and-icon-actions/index.canvas.tsx.
+ * If you adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function Button({
   variant = "primary",
   size = "lg",
@@ -29,23 +43,39 @@ export function Button({
   className,
   children,
   ref,
+  asChild = false,
   ...rest
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const classNames = [
+    styles.button,
+    styles[variant],
+    styles[size],
+    fullWidth ? styles.fullWidth : "",
+    loading ? styles.loading : "",
+    className ?? "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (asChild) {
+    return (
+      <Slot
+        ref={ref}
+        className={classNames}
+        aria-disabled={isDisabled || undefined}
+        aria-busy={loading || undefined}
+        {...rest}
+      >
+        {children}
+      </Slot>
+    );
+  }
 
   return (
     <button
       ref={ref}
-      className={[
-        styles.button,
-        styles[variant],
-        styles[size],
-        fullWidth ? styles.fullWidth : "",
-        loading ? styles.loading : "",
-        className ?? "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      className={classNames}
       disabled={isDisabled}
       aria-busy={loading || undefined}
       {...rest}
@@ -68,3 +98,17 @@ export function Button({
     </button>
   );
 }
+
+defineControls(Button, {
+  children: { type: "text" },
+  variant: { type: "select" },
+  size: { type: "select" },
+  loading: { type: "boolean" },
+  fullWidth: { type: "boolean" },
+  disabled: { type: "boolean" },
+  asChild: { type: "boolean" },
+  leadingIcon: false,
+  trailingIcon: false,
+  className: false,
+  onClick: false,
+});

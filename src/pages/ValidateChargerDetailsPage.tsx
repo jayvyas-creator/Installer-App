@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
 import { Heading } from "@/components/atoms/Heading";
@@ -29,6 +30,7 @@ type LoadState =
 // ID already put in the session — a refresh or a resumed session should
 // still show the current backend record, not stale local state.
 export function ValidateChargerDetailsPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setChargerDetails, markRegistered, reset } = useInstallFlow();
 
@@ -90,23 +92,25 @@ export function ValidateChargerDetailsPage() {
   if (!hasSessionData) {
     return (
       <AppLayout
-        title="Validate Charger Details"
+        title={t("validateChargerDetails.title")}
         stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}
-        footer={<Button fullWidth onClick={handleCancel}>Cancel</Button>}
+        footer={
+          <Button fullWidth onClick={handleCancel}>
+            {t("validateChargerDetails.cancel")}
+          </Button>
+        }
       >
-        <ErrorBanner
-          title="Your session is missing the installer details. Please cancel and start again."
-        />
+        <ErrorBanner title={t("validateChargerDetails.sessionMissing")} />
       </AppLayout>
     );
   }
 
   if (loadState.status === "loading") {
     return (
-      <AppLayout title="Validate Charger Details" stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}>
+      <AppLayout title={t("validateChargerDetails.title")} stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}>
         <p className={styles.loadingRow} role="status">
           <Loader2 className="spin" size={20} aria-hidden />
-          Loading charger details…
+          {t("validateChargerDetails.loading")}
         </p>
       </AppLayout>
     );
@@ -115,60 +119,65 @@ export function ValidateChargerDetailsPage() {
   if (loadState.status === "error") {
     return (
       <AppLayout
-        title="Validate Charger Details"
+        title={t("validateChargerDetails.title")}
         stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}
         footer={
           <div className={styles.footerRow}>
             <Button variant="secondary" fullWidth onClick={handleCancel}>
-              Cancel
+              {t("validateChargerDetails.cancel")}
             </Button>
             <Button fullWidth onClick={loadDetails}>
-              Retry
+              {t("validateChargerDetails.retry")}
             </Button>
           </div>
         }
       >
-        <ErrorBanner title={loadState.error || "Could not load charger details. Please try again."} />
+        <ErrorBanner title={loadState.error || t("validateChargerDetails.loadError")} />
       </AppLayout>
     );
   }
 
   const details = loadState.data;
   const connectorLabel = (index: number) =>
-    details.connectorTypes.length > 1 ? `Connector ${index + 1} Type` : "Connector Type";
+    details.connectorTypes.length > 1
+      ? t("validateChargerDetails.connectorTypeIndexedLabel", { index: index + 1 })
+      : t("validateChargerDetails.connectorTypeLabel");
 
   return (
     <AppLayout
-      title="Validate Charger Details"
+      title={t("validateChargerDetails.title")}
       stepper={{ steps: FLOW_STEPS, currentIndex: 2 }}
       footer={
         <div className={styles.footerRow}>
           <Button variant="secondary" fullWidth disabled={confirming} onClick={handleCancel}>
-            Cancel
+            {t("validateChargerDetails.cancel")}
           </Button>
           <Button fullWidth loading={confirming} onClick={handleConfirm}>
-            {confirming ? "Confirming…" : "Confirm"}
+            {confirming ? t("validateChargerDetails.confirming") : t("validateChargerDetails.confirm")}
           </Button>
         </div>
       }
     >
       <div className={formStyles.stack}>
-        <Heading level={1}>Validate Charger Details</Heading>
+        <Heading level={1}>{t("validateChargerDetails.heading")}</Heading>
 
         <div className={formStyles.section}>
-          <ReadOnlyField label="Charger ID" value={details.chargerId} />
-          <ReadOnlyField label="QR Code URL" value={details.qrCodeUrl} />
-          <ReadOnlyField label="Serial Number" value={details.serialNumber} />
+          <ReadOnlyField label={t("validateChargerDetails.chargerIdLabel")} value={details.chargerId} />
+          <ReadOnlyField label={t("validateChargerDetails.qrCodeUrlLabel")} value={details.qrCodeUrl} />
+          <ReadOnlyField label={t("validateChargerDetails.serialNumberLabel")} value={details.serialNumber} />
           {details.connectorTypes.map((connectorType, index) => (
             <ReadOnlyField key={index} label={connectorLabel(index)} value={connectorType} />
           ))}
-          <ReadOnlyField label="No. of Connectors" value={String(details.noOfConnectors)} />
+          <ReadOnlyField
+            label={t("validateChargerDetails.noOfConnectorsLabel")}
+            value={String(details.noOfConnectors)}
+          />
         </div>
 
         <ErrorBanner
           tone="warning"
-          title="Do not proceed if info is incorrect"
-          description="If any information is invalid or doesn't match, please contact your CPO for further instructions."
+          title={t("validateChargerDetails.doNotProceedTitle")}
+          description={t("validateChargerDetails.doNotProceedDescription")}
         />
 
         {confirmError && <ErrorBanner title={confirmError} />}

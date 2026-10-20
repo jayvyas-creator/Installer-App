@@ -18,7 +18,7 @@ import type {
 
 // Build-time flag: baked into the bundle, not a runtime toggle. Defaults to
 // mocks on so the app keeps working standalone until a real backend is wired.
-const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== "false";
+export const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== "false";
 
 export async function getChargerByToken(
   chargerId: string,

@@ -1,3 +1,4 @@
+import { defineControls } from "tempo-sdk/assets";
 import { Checkbox } from "@/components/atoms/Checkbox";
 import styles from "./ChecklistItem.module.css";
 
@@ -9,6 +10,12 @@ export interface ChecklistItemProps {
   disabled?: boolean;
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/progress-and-flow/index.canvas.tsx. If you
+ * adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function ChecklistItem({
   label,
   description,
@@ -30,3 +37,11 @@ export function ChecklistItem({
     </label>
   );
 }
+
+defineControls(ChecklistItem, {
+  label: { type: "text" },
+  description: { type: "text" },
+  checked: { type: "boolean" },
+  disabled: { type: "boolean" },
+  onToggle: false,
+});

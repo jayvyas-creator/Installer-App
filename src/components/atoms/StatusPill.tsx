@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./StatusPill.module.css";
 
 export type StatusTone = "success" | "error" | "warning" | "info" | "neutral" | "brand";
@@ -14,6 +15,12 @@ export interface StatusPillProps {
   showDot?: boolean;
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/status-and-feedback/index.canvas.tsx.
+ * If you adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function StatusPill({ tone = "neutral", children, showDot = true }: StatusPillProps) {
   return (
     <span className={[styles.pill, styles[tone]].join(" ")}>
@@ -22,3 +29,9 @@ export function StatusPill({ tone = "neutral", children, showDot = true }: Statu
     </span>
   );
 }
+
+defineControls(StatusPill, {
+  tone: { type: "select" },
+  children: { type: "text" },
+  showDot: { type: "boolean" },
+});

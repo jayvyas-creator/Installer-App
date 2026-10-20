@@ -2,6 +2,7 @@ import { ChevronLeft, Headphones } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { IconButton } from "@/components/atoms/IconButton";
 import { Stepper, type StepperProps } from "@/components/molecules/Stepper";
 import { ErrorBanner } from "@/components/molecules/ErrorBanner";
@@ -27,6 +28,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isOffline, setIsOffline] = useState(
     () => typeof navigator !== "undefined" && !navigator.onLine,
   );
@@ -37,7 +39,7 @@ export function AppShell({
     }
     function handleOnline() {
       setIsOffline(false);
-      toast("Back online.");
+      toast(t("appShell.backOnline"));
     }
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
@@ -45,14 +47,14 @@ export function AppShell({
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
     };
-  }, []);
+  }, [t]);
 
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
         <div className={styles.headerSide}>
           {onBack && !backDisabled && (
-            <IconButton aria-label="Go back" tone="subtle" onClick={onBack}>
+            <IconButton aria-label={t("appShell.goBack")} tone="subtle" onClick={onBack}>
               <ChevronLeft size={22} />
             </IconButton>
           )}
@@ -61,7 +63,7 @@ export function AppShell({
         <div className={[styles.headerSide, styles.end].join(" ")}>
           {showHelp && (
             <IconButton
-              aria-label="Help and support"
+              aria-label={t("appShell.helpAndSupport")}
               tone="subtle"
               onClick={() => navigate("/help")}
             >
@@ -81,8 +83,8 @@ export function AppShell({
             <div className={styles.offlineBanner}>
               <ErrorBanner
                 tone="warning"
-                title="You're offline"
-                description="Check your connection — you can keep working, and we'll pick back up once you're back online."
+                title={t("appShell.offlineTitle")}
+                description={t("appShell.offlineDescription")}
               />
             </div>
           )}

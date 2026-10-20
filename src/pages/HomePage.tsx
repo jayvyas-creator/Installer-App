@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, QrCode, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/templates/AppLayout";
 import { IconButton } from "@/components/atoms/IconButton";
 import { Input } from "@/components/atoms/Input";
@@ -8,28 +9,14 @@ import { ResumeInstallBanner } from "@/components/molecules/ResumeInstallBanner"
 import { useInstallFlow, type InstallSession } from "@/state/InstallFlowContext";
 import { useHistorySync } from "@/navigation/useHistorySync";
 import { resolveRoute } from "@/navigation/resolveRoute";
-import { useQrScanner, type QrScannerError } from "@/hooks/useQrScanner";
+import { useQrScanner } from "@/hooks/useQrScanner";
+import { USE_MOCKS } from "@/api/endpoints";
 import dynachrgLogo from "@/assets/dynachrg-logo.png";
 import styles from "./HomePage.module.css";
 
 // Dev/mock-mode escape hatch: useQrScanner has no real decoder wired in yet
 // (see its TODO), so this is what "Simulate a successful scan" produces.
 const DEMO_SCANNED_ID = "DC-48213";
-
-// DESIGN-HANDOFF.md §2.1 "Camera unavailable" copy, keyed by the hook's
-// error states. The doc's table truncates every variant but the first with
-// "…"; completed here the same way the HTTPS variant spells itself out in
-// full ("You can enter the Charger ID below instead.").
-const CAMERA_ERROR_MESSAGES: Record<QrScannerError, string> = {
-  "insecure-context":
-    "The camera only works over HTTPS (or on localhost). You can enter the Charger ID below instead.",
-  "permission-denied":
-    "Camera access was denied. Allow camera access in your browser settings to scan. You can enter the Charger ID below instead.",
-  "no-camera": "No camera was found on this device. You can enter the Charger ID below instead.",
-  "camera-busy":
-    "The camera is being used by another app. Close it and try again. You can enter the Charger ID below instead.",
-  unknown: "The camera couldn't be started in this browser. You can enter the Charger ID below instead.",
-};
 
 // Where "Resume" on the draft banner should land. Status-driven once Enter
 // Token ID has run (resolveRoute, CLAUDE.md §6); otherwise a best guess from
@@ -43,6 +30,7 @@ function resumeRoute(session: InstallSession): string {
 }
 
 export function HomePage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setChargerId, resetForNewChargerId, reset } = useInstallFlow();
   const [chargerId, setChargerIdInput] = useState("");
@@ -64,7 +52,7 @@ export function HomePage() {
   function proceedWithId(id: string) {
     const trimmed = id.trim();
     if (!trimmed) {
-      setFieldError("Enter a Charger ID or scan the QR code on the charger.");
+      setFieldError(t("home.fieldErrorRequired"));
       return;
     }
     setFieldError(undefined);
@@ -119,7 +107,7 @@ export function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showScanner]);
 
-  const cameraMessage = qr.error ? CAMERA_ERROR_MESSAGES[qr.error] : undefined;
+  const cameraMessage = qr.error ? t(`home.cameraError.${qr.error}`) : undefined;
   const bannerMessage = cameraMessage ?? fieldError;
 
   return (
@@ -130,39 +118,37 @@ export function HomePage() {
             chargerId={session.chargerId}
             installerName={
               `${session.installerDraft.firstName} ${session.installerDraft.lastName}`.trim() ||
-              "an installer"
+              t("home.defaultInstallerName")
             }
             onResume={() => navigate(resumeRoute(session))}
             onDiscard={reset}
           />
         )}
         <div className={styles.hero}>
-          <img className={styles.logoMark} src={dynachrgLogo} alt="DynaChrg" />
-          <h1 className={styles.title}>Installer</h1>
-          <p className={styles.subtitle}>
-            Scan the charger's QR code or enter its ID to start the install.
-          </p>
+          <img className={styles.logoMark} src={dynachrgLogo} alt={t("home.logoAlt")} />
+          <h1 className={styles.title}>{t("home.title")}</h1>
+          <p className={styles.subtitle}>{t("home.subtitle")}</p>
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
           {bannerMessage && <ErrorBanner tone="warning" title={bannerMessage} />}
 
           <Input
-            label="Charger ID"
-            placeholder="DC-48213"
+            label={t("home.chargerIdLabel")}
+            placeholder={t("home.chargerIdPlaceholder")}
             value={chargerId}
             onChange={(e) => setChargerIdInput(e.target.value)}
             autoCapitalize="characters"
             autoCorrect="off"
             trailingAdornment={
-              <IconButton aria-label="Continue" type="submit" tone="subtle">
+              <IconButton aria-label={t("home.continueAriaLabel")} type="submit" tone="subtle">
                 <ArrowRight size={18} />
               </IconButton>
             }
             required
           />
 
-          <div className={styles.divider}>or enter it manually</div>
+          <div className={styles.divider}>{t("home.orEnterManually")}</div>
 
           <button
             type="button"
@@ -171,13 +157,13 @@ export function HomePage() {
             onClick={handleScanClick}
           >
             <QrCode size={20} aria-hidden />
-            Scan QR code
+            {t("home.scanQrCode")}
           </button>
         </form>
 
         <div style={{ textAlign: "center", marginTop: "var(--space-6)" }}>
           <p style={{ margin: 0, fontSize: "var(--font-size-caption)", color: "var(--text-secondary)" }}>
-            Scan the QR code on the charger you are installing
+            {t("home.scanPrompt")}
           </p>
           <p
             style={{
@@ -197,12 +183,12 @@ export function HomePage() {
           className={styles.overlay}
           role="dialog"
           aria-modal="true"
-          aria-label="QR code scanner"
+          aria-label={t("home.scannerDialogAriaLabel")}
         >
           <div className={styles.overlayHeader}>
             <IconButton
               ref={closeButtonRef}
-              aria-label="Close scanner"
+              aria-label={t("home.closeScannerAriaLabel")}
               tone="onBrand"
               onClick={handleCancelScan}
             >
@@ -234,25 +220,27 @@ export function HomePage() {
           </div>
           <div className={styles.overlayFooter}>
             <span className={styles.overlayHint}>
-              {qr.isScanning ? "Point the camera at the QR code on the charger." : "Starting camera…"}
+              {qr.isScanning ? t("home.pointCamera") : t("home.startingCamera")}
             </span>
             <div style={{ display: "flex", gap: "var(--space-5)" }}>
               <button type="button" className={styles.manualLink} onClick={handleCancelScan}>
-                Cancel
+                {t("home.cancel")}
               </button>
               {qr.torchSupported && (
                 <button type="button" className={styles.manualLink} onClick={qr.toggleTorch}>
-                  {qr.torchOn ? "Torch off" : "Torch on"}
+                  {qr.torchOn ? t("home.torchOff") : t("home.torchOn")}
                 </button>
               )}
             </div>
-            <button
-              type="button"
-              className={styles.manualLink}
-              onClick={() => qr.simulateScan(DEMO_SCANNED_ID)}
-            >
-              Simulate a successful scan
-            </button>
+            {USE_MOCKS && (
+              <button
+                type="button"
+                className={styles.manualLink}
+                onClick={() => qr.simulateScan(DEMO_SCANNED_ID)}
+              >
+                {t("home.simulateScan")}
+              </button>
+            )}
           </div>
         </div>
       )}

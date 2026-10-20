@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
 import { Heading } from "@/components/atoms/Heading";
@@ -8,11 +9,17 @@ import { SelectField } from "@/components/molecules/SelectField";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { useHistorySync } from "@/navigation/useHistorySync";
 import { FLOW_STEPS } from "@/constants/flowSteps";
-import { VOLTAGE_OPTIONS, NUMBER_OF_PHASES_OPTIONS, phaseAssignmentOptionsForSiteArea } from "@/constants/electrical";
+import {
+  VOLTAGE_OPTIONS,
+  NUMBER_OF_PHASES_OPTIONS,
+  phaseAssignmentOptionsForSiteArea,
+  labelForPhaseAssignment,
+} from "@/constants/electrical";
 import { createSiteAreaDraft, validateSiteAreaDraft, type NumberOfPhases, type PhaseAssignment } from "@/types";
 import formStyles from "./shared/form.module.css";
 
 export function CreateSiteAreaPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setNewSiteArea } = useInstallFlow();
 
@@ -72,20 +79,20 @@ export function CreateSiteAreaPage() {
 
   return (
     <AppLayout
-      title="Create Site Area"
+      title={t("createSiteArea.title")}
       onBack={handleBack}
       stepper={{ steps: FLOW_STEPS, currentIndex: 3 }}
       footer={
         <Button type="submit" form="create-site-area-form" fullWidth disabled={!validation.data}>
-          Next
+          {t("createSiteArea.next")}
         </Button>
       }
     >
       <form id="create-site-area-form" className={formStyles.stack} onSubmit={handleSubmit}>
-        <Heading level={1}>Create Site Area</Heading>
+        <Heading level={1}>{t("createSiteArea.heading")}</Heading>
 
         <Input
-          label="Area Name"
+          label={t("createSiteArea.areaNameLabel")}
           value={draft.name}
           onChange={(e) => setDraft((prev) => ({ ...prev, name: e.target.value }))}
           errorText={draft.name.trim() ? errors.name : undefined}
@@ -93,8 +100,8 @@ export function CreateSiteAreaPage() {
         />
 
         <SelectField<string>
-          label="Supply Voltage (V)"
-          placeholder="Select a voltage"
+          label={t("createSiteArea.voltageLabel")}
+          placeholder={t("createSiteArea.voltagePlaceholder")}
           value={draft.voltage === "" ? "" : String(draft.voltage)}
           onValueChange={(value) => setDraft((prev) => ({ ...prev, voltage: Number(value) }))}
           options={VOLTAGE_OPTIONS.map((voltage) => ({ value: String(voltage), label: `${voltage}V` }))}
@@ -102,8 +109,8 @@ export function CreateSiteAreaPage() {
         />
 
         <SelectField<NumberOfPhases>
-          label="Number of Phases"
-          placeholder="Select number of phases"
+          label={t("createSiteArea.numberOfPhasesLabel")}
+          placeholder={t("createSiteArea.numberOfPhasesPlaceholder")}
           value={draft.numberOfPhases}
           onValueChange={handleNumberOfPhasesChange}
           options={NUMBER_OF_PHASES_OPTIONS}
@@ -111,18 +118,24 @@ export function CreateSiteAreaPage() {
         />
 
         <SelectField<PhaseAssignment>
-          label="Phase Assignment"
-          placeholder={draft.numberOfPhases === "" ? "Select number of phases first" : "Select a phase assignment"}
-          helperText={draft.numberOfPhases === "" ? "Select number of phases first" : undefined}
+          label={t("createSiteArea.phaseAssignmentLabel")}
+          placeholder={
+            draft.numberOfPhases === ""
+              ? t("createSiteArea.phaseAssignmentPlaceholderFirst")
+              : t("createSiteArea.phaseAssignmentPlaceholder")
+          }
+          helperText={
+            draft.numberOfPhases === "" ? t("createSiteArea.phaseAssignmentPlaceholderFirst") : undefined
+          }
           value={draft.phaseAssignment}
           onValueChange={(value) => setDraft((prev) => ({ ...prev, phaseAssignment: value }))}
-          options={phaseAssignmentOptions.map((code) => ({ value: code, label: code }))}
+          options={phaseAssignmentOptions.map((code) => ({ value: code, label: labelForPhaseAssignment(code) }))}
           disabled={draft.numberOfPhases === ""}
           required
         />
 
         <Input
-          label="Amps Per Phase (A)"
+          label={t("createSiteArea.ampsPerPhaseLabel")}
           value={draft.ampsPerPhase}
           onChange={(e) => handleAmpsChange(e.target.value)}
           errorText={draft.ampsPerPhase.trim() ? errors.ampsPerPhase : undefined}
@@ -132,13 +145,13 @@ export function CreateSiteAreaPage() {
         />
 
         <ReadOnlyField
-          label="Max Power (KW)"
+          label={t("createSiteArea.maxPowerLabel")}
           value={maxPowerPreview === null ? "" : maxPowerPreview.toFixed(2)}
         />
 
         {hasExistingAreas && (
           <button type="button" className={formStyles.dashedAddRow} onClick={() => navigate("/site-information")}>
-            Choose an existing site area instead
+            {t("createSiteArea.chooseExisting")}
           </button>
         )}
       </form>

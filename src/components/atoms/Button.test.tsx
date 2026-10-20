@@ -36,4 +36,26 @@ describe("Button", () => {
     const { container } = render(<Button>Submit</Button>);
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("renders its child element instead of a button when asChild is set", () => {
+    render(
+      <Button asChild>
+        <a href="/help">Get help</a>
+      </Button>,
+    );
+    const link = screen.getByRole("link", { name: "Get help" });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/help");
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("merges its classes onto the child element when asChild is set", () => {
+    render(
+      <Button asChild variant="secondary" className="custom">
+        <a href="/help">Get help</a>
+      </Button>,
+    );
+    const link = screen.getByRole("link", { name: "Get help" });
+    expect(link.className).toContain("custom");
+  });
 });

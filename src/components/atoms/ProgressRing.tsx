@@ -1,3 +1,4 @@
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./ProgressRing.module.css";
 
 export interface ProgressRingProps {
@@ -8,6 +9,12 @@ export interface ProgressRingProps {
   tone?: "brand" | "success" | "error";
 }
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/progress-and-flow/index.canvas.tsx. If you
+ * adjust this component in any way, ensure the canvas and its asset
+ * declaration stay consistent.
+ */
 export function ProgressRing({
   size = 64,
   strokeWidth = 5,
@@ -82,3 +89,10 @@ export function ProgressRing({
     </svg>
   );
 }
+
+defineControls(ProgressRing, {
+  size: { type: "number" },
+  strokeWidth: { type: "number" },
+  progress: { type: "range", min: 0, max: 100, step: 1 },
+  tone: { type: "select" },
+});

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { Select } from "@/components/atoms/Select";
@@ -16,6 +17,7 @@ import {
   VOLTAGE_OPTIONS,
   numberOfPhasesOptionsForCharger,
   phaseAssignmentOptionsForCharger,
+  labelForPhaseAssignment,
 } from "@/constants/electrical";
 import {
   createChargerElectricalDraft,
@@ -38,7 +40,17 @@ interface EffectiveSiteArea {
   phaseAssignment: PhaseAssignment;
 }
 
-const VALID_PHASE_ASSIGNMENTS: PhaseAssignment[] = ["A", "B", "C", "AB", "BC", "CA", "ABC"];
+const VALID_PHASE_ASSIGNMENTS: PhaseAssignment[] = [
+  "A",
+  "B",
+  "C",
+  "AB",
+  "BC",
+  "CA",
+  "ABC",
+  "BCA",
+  "CAB",
+];
 
 // The session only ever stores the validated Data shape once this page has
 // been completed; editing it again means re-hydrating it back into the
@@ -80,6 +92,7 @@ function resolveSiteArea(session: InstallSession): EffectiveSiteArea | null {
 }
 
 export function ChargerElectricalInformationPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setChargerElectrical } = useInstallFlow();
 
@@ -129,63 +142,67 @@ export function ChargerElectricalInformationPage() {
 
   return (
     <AppShell
-      title="Charger Electrical Information"
+      title={t("chargerElectricalInformation.title")}
       onBack={() => navigate("/site-information")}
       stepper={{ steps: FLOW_STEPS, currentIndex: 4 }}
       footer={
         <Button fullWidth size="lg" disabled={!canContinue} onClick={handleContinue}>
-          Continue
+          {t("chargerElectricalInformation.continue")}
         </Button>
       }
     >
       <div className={formStyles.stack}>
         <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Charger Electrical Information</h1>
-          <p className={formStyles.subheading}>
-            Describe the charger's electrical setup. It's checked against the chosen site area.
-          </p>
+          <h1 className={formStyles.heading}>{t("chargerElectricalInformation.heading")}</h1>
+          <p className={formStyles.subheading}>{t("chargerElectricalInformation.subheading")}</p>
         </div>
 
         {locked && (
           <ErrorBanner
             tone="warning"
-            title="Already installed"
-            description="This charger is already installed. Contact support to change these details."
+            title={t("chargerElectricalInformation.alreadyInstalledTitle")}
+            description={t("chargerElectricalInformation.alreadyInstalledDescription")}
           />
         )}
 
         {!locked && !siteArea && (
           <ErrorBanner
             tone="warning"
-            title="No site area selected"
-            description="No site area is selected. Please go back and choose one."
+            title={t("chargerElectricalInformation.noSiteAreaTitle")}
+            description={t("chargerElectricalInformation.noSiteAreaDescription")}
           />
         )}
 
         {locked ? (
           <div className={formStyles.fieldGrid}>
-            <ReadOnlyField label="Type of Charger" value={session.chargerElectrical?.chargerType ?? "—"} />
             <ReadOnlyField
-              label="Supply Voltage (V)"
+              label={t("chargerElectricalInformation.chargerTypeLabel")}
+              value={session.chargerElectrical?.chargerType ?? "—"}
+            />
+            <ReadOnlyField
+              label={t("chargerElectricalInformation.voltageLabel")}
               value={session.chargerElectrical ? `${session.chargerElectrical.voltage}V` : "—"}
             />
             <ReadOnlyField
-              label="Number of Connected Phase"
+              label={t("chargerElectricalInformation.numberOfPhasesLabel")}
               value={
                 session.chargerElectrical
                   ? session.chargerElectrical.numberOfPhases === "three"
-                    ? "Three Phase"
-                    : "Single Phase"
+                    ? t("chargerElectricalInformation.threePhase")
+                    : t("chargerElectricalInformation.singlePhase")
                   : "—"
               }
             />
-            <ReadOnlyField label="Phase Assignment" value={session.chargerElectrical?.phaseAssignment ?? "—"} />
             <ReadOnlyField
-              label="Amp Per Phase (A)"
+              label={t("chargerElectricalInformation.phaseAssignmentLabel")}
+              value={session.chargerElectrical?.phaseAssignment ?? "—"}
+            />
+            <ReadOnlyField
+              label={t("chargerElectricalInformation.ampPerPhaseLabel")}
               value={session.chargerElectrical ? `${session.chargerElectrical.ampPerPhase}A` : "—"}
             />
             <ReadOnlyField
-              label="Rated Power (kW)"
+              label={t("chargerElectricalInformation.ratedPowerLabel")}
               value={session.chargerElectrical ? `${session.chargerElectrical.ratedPowerKw.toFixed(2)} kW` : "—"}
             />
           </div>
@@ -193,32 +210,32 @@ export function ChargerElectricalInformationPage() {
           siteArea && (
             <div className={formStyles.stack}>
               <SelectField<ChargerType>
-                label="Type of Charger"
+                label={t("chargerElectricalInformation.chargerTypeLabel")}
                 options={CHARGER_TYPE_OPTIONS}
                 value={draft.chargerType}
                 onValueChange={(value) => {
                   setDraft((prev) => ({ ...prev, chargerType: value }));
                 }}
-                placeholder="Select type of charger"
+                placeholder={t("chargerElectricalInformation.chargerTypePlaceholder")}
                 required
                 errorText={draft.chargerType !== "" ? errors.chargerType : undefined}
               />
 
               <Select
-                label="Supply Voltage (V)"
+                label={t("chargerElectricalInformation.voltageLabel")}
                 value={draft.voltage === "" ? "" : String(draft.voltage)}
                 onChange={(event) => {
                   const next = event.target.value;
                   setDraft((prev) => ({ ...prev, voltage: next === "" ? "" : Number(next) }));
                 }}
                 options={VOLTAGE_OPTIONS.map((v) => ({ value: String(v), label: `${v}V` }))}
-                placeholder="Select a voltage"
+                placeholder={t("chargerElectricalInformation.voltagePlaceholder")}
                 required
                 errorText={draft.voltage !== "" ? errors.voltage : undefined}
               />
 
               <SelectField<NumberOfPhases>
-                label="Number of Connected Phase"
+                label={t("chargerElectricalInformation.numberOfPhasesLabel")}
                 options={numberOfPhasesOptions}
                 value={draft.numberOfPhases}
                 onValueChange={(value) => {
@@ -232,42 +249,46 @@ export function ChargerElectricalInformationPage() {
                     return { ...prev, numberOfPhases: value, phaseAssignment };
                   });
                 }}
-                placeholder="Select number of phases"
+                placeholder={t("chargerElectricalInformation.numberOfPhasesPlaceholder")}
                 required
                 errorText={draft.numberOfPhases !== "" ? errors.numberOfPhases : undefined}
               />
 
               <SelectField<PhaseAssignment>
-                label="Phase Assignment"
-                options={phaseAssignmentOptions.map((pa) => ({ value: pa, label: pa }))}
+                label={t("chargerElectricalInformation.phaseAssignmentLabel")}
+                options={phaseAssignmentOptions.map((pa) => ({ value: pa, label: labelForPhaseAssignment(pa) }))}
                 value={draft.phaseAssignment}
                 onValueChange={(value) => {
                   setDraft((prev) => ({ ...prev, phaseAssignment: value }));
                 }}
-                placeholder={draft.numberOfPhases === "" ? "Select number of phases first" : "Select a phase assignment"}
+                placeholder={
+                  draft.numberOfPhases === ""
+                    ? t("chargerElectricalInformation.phaseAssignmentPlaceholderFirst")
+                    : t("chargerElectricalInformation.phaseAssignmentPlaceholder")
+                }
                 disabled={draft.numberOfPhases === ""}
                 required
                 errorText={draft.phaseAssignment !== "" ? errors.phaseAssignment : undefined}
               />
 
               <Input
-                label="Amp Per Phase (A)"
+                label={t("chargerElectricalInformation.ampPerPhaseLabel")}
                 value={draft.ampPerPhase}
                 onChange={(event) => {
                   const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
                   setDraft((prev) => ({ ...prev, ampPerPhase: digits }));
                 }}
                 inputMode="numeric"
-                placeholder="e.g. 32"
+                placeholder={t("chargerElectricalInformation.ampPerPhasePlaceholder")}
                 required
                 trailingAdornment={
-                  <Tooltip text="The current draw per phase, in amps, that this charger pulls under full load." />
+                  <Tooltip text={t("chargerElectricalInformation.ampPerPhaseTooltip")} />
                 }
                 errorText={draft.ampPerPhase.trim() !== "" ? errors.ampPerPhase : undefined}
               />
 
               <ReadOnlyField
-                label="Rated Power (kW)"
+                label={t("chargerElectricalInformation.ratedPowerLabel")}
                 value={ratedPowerKw !== null ? `${ratedPowerKw.toFixed(2)} kW` : "—"}
               />
             </div>

@@ -1,14 +1,16 @@
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/atoms/Input";
 import { SelectField } from "@/components/molecules/SelectField";
+import { COUNTRY_DIAL_CODES } from "@/constants/countries";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./PhoneNumberField.module.css";
 
-const COUNTRY_CODE_OPTIONS = [
-  { value: "+1", label: "+1 (US/CA)" },
-  { value: "+44", label: "+44 (UK)" },
-  { value: "+61", label: "+61 (AU)" },
-  { value: "+91", label: "+91 (IN)" },
-];
-
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/form-fields/index.canvas.tsx. If you adjust
+ * this component in any way, ensure the canvas and its asset declaration
+ * stay consistent.
+ */
 export interface PhoneNumberFieldProps {
   countryCode: string;
   phoneNumber: string;
@@ -26,16 +28,21 @@ export function PhoneNumberField({
   errorText,
   required,
 }: PhoneNumberFieldProps) {
+  const { t } = useTranslation();
+  const countryCodeOptions = COUNTRY_DIAL_CODES.map((country) => ({
+    value: country.dialCode,
+    label: t("phoneNumberField.countryOption", { dialCode: country.dialCode, name: country.name }),
+  }));
   return (
     <div className={styles.row}>
       <SelectField
-        label="Code"
-        options={COUNTRY_CODE_OPTIONS}
+        label={t("phoneNumberField.codeLabel")}
+        options={countryCodeOptions}
         value={countryCode}
         onValueChange={onCountryCodeChange}
       />
       <Input
-        label="Mobile Number"
+        label={t("phoneNumberField.mobileNumberLabel")}
         type="tel"
         inputMode="tel"
         required={required}
@@ -46,3 +53,12 @@ export function PhoneNumberField({
     </div>
   );
 }
+
+defineControls(PhoneNumberField, {
+  countryCode: { type: "text" },
+  phoneNumber: { type: "text" },
+  errorText: { type: "text" },
+  required: { type: "boolean" },
+  onCountryCodeChange: false,
+  onPhoneNumberChange: false,
+});

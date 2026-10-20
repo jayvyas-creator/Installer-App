@@ -1,6 +1,7 @@
 import { Component, Fragment, type ErrorInfo, type ReactNode } from "react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
+import i18n from "@/i18n";
 import styles from "@/styles/outcome.module.css";
 
 interface ErrorBoundaryProps {
@@ -49,14 +50,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     if (error) {
       return (
-        <AppShell title="Unexpected error" backDisabled showHelp={false}>
+        <AppShell title={i18n.t("errorBoundary.title")} backDisabled showHelp={false}>
           <div className={styles.wrap}>
             <OutcomePanel
               tone="error"
-              title="This screen hit a snag"
-              description="The current step didn't load correctly. Your install progress is still saved. Try again, or reload the app if it keeps happening."
-              primaryAction={{ label: "Try again", onClick: this.handleRetry }}
-              secondaryAction={{ label: "Reload app", onClick: this.handleReload }}
+              title={i18n.t("errorBoundary.heading")}
+              description={i18n.t("errorBoundary.description")}
+              primaryAction={{ label: i18n.t("errorBoundary.tryAgain"), onClick: this.handleRetry }}
+              secondaryAction={{ label: i18n.t("errorBoundary.reloadApp"), onClick: this.handleReload }}
             />
           </div>
         </AppShell>

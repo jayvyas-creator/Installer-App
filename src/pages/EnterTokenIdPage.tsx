@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AppLayout } from "@/components/templates/AppLayout";
 import { Button } from "@/components/atoms/Button";
 import { Input } from "@/components/atoms/Input";
@@ -21,6 +22,7 @@ import formStyles from "./shared/form.module.css";
 const NOT_FOUND_PATTERN = /couldn't find|could not find|not found|invalid (token|charger)|rejected/i;
 
 export function EnterTokenIdPage() {
+  const { t } = useTranslation();
   const navigate = useHistorySync();
   const { session, setTokenId, setRegistration, setChargerDetails, setStatus, markRegistered } =
     useInstallFlow();
@@ -61,7 +63,7 @@ export function EnterTokenIdPage() {
         navigate("/no-charger-found");
         return;
       }
-      setFieldError("Failed to fetch charger status. Please try again later.");
+      setFieldError(t("enterTokenId.statusFetchFailed"));
       setCanRetry(true);
       return;
     }
@@ -75,7 +77,7 @@ export function EnterTokenIdPage() {
     if (installerInvalid || loading) return;
     const trimmed = tokenValue.trim();
     if (!trimmed) {
-      setFieldError("Token ID is required.");
+      setFieldError(t("enterTokenId.tokenIdRequired"));
       setCanRetry(false);
       return;
     }
@@ -90,7 +92,7 @@ export function EnterTokenIdPage() {
 
   return (
     <AppLayout
-      title="Enter Token ID"
+      title={t("enterTokenId.title")}
       onBack={() => navigate("/installer-info")}
       backDisabled={loading}
       stepper={{ steps: FLOW_STEPS, currentIndex: 1 }}
@@ -103,34 +105,29 @@ export function EnterTokenIdPage() {
           loading={loading}
           disabled={installerInvalid}
         >
-          {loading ? "Verifying…" : "Continue"}
+          {loading ? t("enterTokenId.verifying") : t("enterTokenId.continue")}
         </Button>
       }
     >
       <form id="enter-token-form" className={formStyles.stack} onSubmit={handleSubmit} noValidate>
         <div className={formStyles.intro}>
-          <h1 className={formStyles.heading}>Enter the installer token</h1>
-          <p className={formStyles.subheading}>
-            The app will check the charger, register the token, and find out where to continue.
-          </p>
+          <h1 className={formStyles.heading}>{t("enterTokenId.heading")}</h1>
+          <p className={formStyles.subheading}>{t("enterTokenId.subheading")}</p>
         </div>
 
         {installerInvalid && (
-          <ErrorBanner
-            tone="warning"
-            title="Some installer information is missing or invalid. Go back and check it before continuing."
-          />
+          <ErrorBanner tone="warning" title={t("enterTokenId.installerInvalidWarning")} />
         )}
 
         <Input
-          label="Token ID"
+          label={t("enterTokenId.tokenIdLabel")}
           value={tokenValue}
           onChange={(e) => {
             setTokenValue(e.target.value);
             setFieldError(undefined);
             setCanRetry(false);
           }}
-          helperText="Token ID will be provided on the work order."
+          helperText={t("enterTokenId.tokenIdHelper")}
           errorText={fieldError}
           disabled={loading || installerInvalid}
           required
@@ -138,7 +135,7 @@ export function EnterTokenIdPage() {
 
         {canRetry && (
           <Button type="button" variant="secondary" size="md" onClick={handleRetry} disabled={loading}>
-            Retry
+            {t("enterTokenId.retry")}
           </Button>
         )}
       </form>

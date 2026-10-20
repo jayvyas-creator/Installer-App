@@ -1,4 +1,5 @@
 import { History } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/atoms/Button";
 import styles from "./ResumeInstallBanner.module.css";
 
@@ -16,24 +17,24 @@ export function ResumeInstallBanner({
   onResume,
   onDiscard,
 }: ResumeInstallBannerProps) {
+  const { t } = useTranslation();
   return (
     <div className={styles.banner} role="status">
       <div className={styles.iconWrap} aria-hidden>
         <History size={20} />
       </div>
       <div className={styles.texts}>
-        <span className={styles.title}>Resume install in progress</span>
+        <span className={styles.title}>{t("resumeInstallBanner.title")}</span>
         <span className={styles.description}>
-          {chargerId}, started by {installerName}. Pick up where you left off, or dismiss this
-          draft and start a new install.
+          {t("resumeInstallBanner.description", { chargerId, installerName })}
         </span>
       </div>
       <div className={styles.actions}>
         <Button size="md" variant="secondary" onClick={onResume}>
-          Resume
+          {t("resumeInstallBanner.resume")}
         </Button>
         <Button size="md" variant="ghost" onClick={onDiscard}>
-          Start new
+          {t("resumeInstallBanner.startNew")}
         </Button>
       </div>
     </div>

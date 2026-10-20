@@ -1,7 +1,14 @@
 import { AlertCircle } from "lucide-react";
 import { useId, type InputHTMLAttributes, type ReactNode, type Ref } from "react";
+import { defineControls } from "tempo-sdk/assets";
 import styles from "./Input.module.css";
 
+/**
+ * The canvas for this component is at
+ * tempo/designs/design-system/form-fields/index.canvas.tsx. If you adjust
+ * this component in any way, ensure the canvas and its asset declaration
+ * stay consistent.
+ */
 export interface InputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
   label: string;
@@ -73,3 +80,21 @@ export function Input({
     </div>
   );
 }
+
+defineControls(Input, {
+  label: { type: "text" },
+  placeholder: { type: "text" },
+  value: { type: "text" },
+  helperText: { type: "text" },
+  errorText: { type: "text" },
+  required: { type: "boolean" },
+  disabled: { type: "boolean" },
+  type: {
+    type: "select",
+    options: ["text", "email", "tel", "password", "number"],
+  },
+  autoComplete: { type: "text" },
+  leadingIcon: false,
+  trailingAdornment: false,
+  onChange: false,
+});
