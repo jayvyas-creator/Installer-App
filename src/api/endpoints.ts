@@ -11,6 +11,7 @@ import type {
   ChargerLookup,
   ChargerStatusResponse,
   InstallPayload,
+  PostStatusResult,
   RegisterTokenPayload,
   RegisterTokenResult,
   Result,
@@ -56,16 +57,21 @@ export async function postStatus(
   chargerId: string,
   installationStep: string,
   installerToken: string,
-): Promise<Result<void>> {
+): Promise<Result<PostStatusResult>> {
   if (USE_MOCKS) return mockPostStatus(chargerId, installationStep);
 
   // TODO(api): replace mock with POST /api/registercharger/v1.0/status/:chargerId?installationStep=
+  // The real endpoint only reports success/failure for the step as a whole
+  // (CLAUDE.md endpoint 3) — no per-command OCPP breakdown is confirmed yet,
+  // so ocppResults stays undefined here until that's wired up.
   const result = await request<unknown>(
     `/registercharger/v1.0/status/${encodeURIComponent(chargerId)}`,
     { method: "POST", query: { installationStep }, installerToken },
   );
   if (!result.ok) return result;
-  return expectSuccess(result.data);
+  const success = expectSuccess(result.data);
+  if (!success.ok) return success;
+  return { ok: true, data: {} };
 }
 
 export async function putTokenRegistration(

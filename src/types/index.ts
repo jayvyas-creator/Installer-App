@@ -2,7 +2,8 @@
 // backend wire shapes (see src/types/api.ts for that) or form-in-progress
 // state (see the Draft/Data pairs below).
 
-import { findCountryByDialCode } from "@/constants/countries";
+import { isValidPhoneNumber, type CountryCode } from "libphonenumber-js";
+import { findCountryByIso } from "@/constants/countries";
 
 export type NumberOfPhases = "single" | "three";
 
@@ -109,7 +110,7 @@ export function createInstallerDraft(): InstallerDraft {
     licenseNumber: "",
     evitpNumber: "",
     email: "",
-    countryCode: "+1",
+    countryCode: "US",
     countryName: "United States",
     phoneNumber: "",
   };
@@ -135,17 +136,16 @@ export function validateInstallerDraft(
   if (!draft.email.trim()) errors.email = "Enter your email address.";
   else if (!EMAIL_PATTERN.test(draft.email.trim())) errors.email = "Enter a valid email address.";
   if (!draft.phoneNumber.trim()) errors.phoneNumber = "Enter your mobile number.";
-  else {
-    const digits = draft.phoneNumber.replace(/\D/g, "");
-    const country = findCountryByDialCode(draft.countryCode);
-    if (!country) {
-      if (digits.length < 7) errors.phoneNumber = "Enter a valid mobile number.";
-    } else if (digits.length < country.minDigits || digits.length > country.maxDigits) {
-      errors.phoneNumber =
-        country.minDigits === country.maxDigits
-          ? `Enter a ${country.minDigits}-digit mobile number for ${country.name}.`
-          : `Enter a mobile number between ${country.minDigits} and ${country.maxDigits} digits for ${country.name}.`;
-    }
+  // Mirrors the mobile app: full country list + libphonenumber-js validation
+  // (CLAUDE.md §6, mobile app is the source of truth) instead of a bare
+  // digit-count check. draft.countryCode is the ISO 3166-1 value the field
+  // selects (see src/constants/countries.ts), which is what
+  // isValidPhoneNumber needs to parse a nationally-formatted number.
+  else if (!isValidPhoneNumber(draft.phoneNumber.trim(), draft.countryCode as CountryCode)) {
+    const country = findCountryByIso(draft.countryCode);
+    errors.phoneNumber = country
+      ? `Enter a valid mobile number for ${country.name}.`
+      : "Enter a valid mobile number.";
   }
 
   if (Object.keys(errors).length > 0) return { data: null, errors };

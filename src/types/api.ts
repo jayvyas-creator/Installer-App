@@ -51,6 +51,23 @@ export interface ChargerStatusResponse {
   installationStep: InstallationStep;
 }
 
+// Per-command outcome for the final OCPP check's 4 real commands (CLAUDE.md
+// §6, mobile source of truth: getConfiguration/changeConfiguration/reset/
+// changeAvailability). The documented real endpoint 3 only reports
+// success/failure for the step as a whole, not per command, so `ocppResults`
+// is populated by the mock today and left undefined on the real branch until
+// the backend confirms a per-command shape.
+export interface OcppCommandResult {
+  key: string;
+  status: "passed" | "failed";
+  reason?: string;
+}
+
+// POST .../status/:chargerId result
+export interface PostStatusResult {
+  ocppResults?: OcppCommandResult[];
+}
+
 // PUT /api/registertoken/v1.0 body
 export interface RegisterTokenPayload {
   Email: string;

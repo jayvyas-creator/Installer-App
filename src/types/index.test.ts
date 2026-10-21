@@ -15,7 +15,7 @@ describe("validateInstallerDraft", () => {
   });
 
   it("rejects a malformed email without touching other fields", () => {
-    const draft = { ...createInstallerDraft(), companyName: "Acme", firstName: "A", lastName: "B", phoneNumber: "5551234567", email: "not-an-email" };
+    const draft = { ...createInstallerDraft(), companyName: "Acme", firstName: "A", lastName: "B", phoneNumber: "2025551234", email: "not-an-email" };
     const result = validateInstallerDraft(draft);
     expect(result.data).toBeNull();
     expect(result.errors?.email).toBeDefined();
@@ -41,7 +41,7 @@ describe("validateInstallerDraft", () => {
       firstName: "Ada",
       lastName: "Lovelace",
       email: "ada@example.com",
-      phoneNumber: "555-123-4567",
+      phoneNumber: "202-555-1234",
     };
     const result = validateInstallerDraft(draft);
     expect(result.errors).toBeNull();

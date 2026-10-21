@@ -8,7 +8,7 @@ import { useInstallFlow } from "@/state/InstallFlowContext";
 import { useHistorySync } from "@/navigation/useHistorySync";
 import { validateInstallerDraft, type InstallerDraftErrors } from "@/types";
 import { FLOW_STEPS } from "@/constants/flowSteps";
-import { findCountryByDialCode } from "@/constants/countries";
+import { findCountryByIso } from "@/constants/countries";
 import formStyles from "./shared/form.module.css";
 
 export function InstallerInformationPage() {
@@ -23,7 +23,7 @@ export function InstallerInformationPage() {
   }
 
   function handleCountryCodeChange(value: string) {
-    update({ countryCode: value, countryName: findCountryByDialCode(value)?.name ?? value });
+    update({ countryCode: value, countryName: findCountryByIso(value)?.name ?? value });
   }
 
   function handleSubmit(e: React.FormEvent) {

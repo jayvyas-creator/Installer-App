@@ -9,3 +9,9 @@
   color: var(--text-secondary);
   max-width: 26rem;
 }
+
+.ocppSteps {
+  width: 100%;
+  max-width: 26rem;
+  margin-top: var(--space-2);
+}

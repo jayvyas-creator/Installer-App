@@ -4,11 +4,10 @@ import { useTranslation } from "react-i18next";
 import { AppShell } from "@/components/organisms/AppShell";
 import { Button } from "@/components/atoms/Button";
 import { OutcomePanel } from "@/components/molecules/OutcomePanel";
-import { StatusPill, type StatusTone } from "@/components/atoms/StatusPill";
+import { OcppStepList } from "@/components/molecules/OcppStepList";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { useHistorySync } from "@/navigation/useHistorySync";
 import { FLOW_STEPS } from "@/constants/flowSteps";
-import type { OcppStepStatus } from "@/types";
 import formStyles from "./shared/form.module.css";
 import outcomeStyles from "@/styles/outcome.module.css";
 import styles from "./AutomatedOcppTestingPage.module.css";
@@ -16,13 +15,6 @@ import styles from "./AutomatedOcppTestingPage.module.css";
 interface AutomatedOcppLocationState {
   checkError?: string;
 }
-
-const STEP_STATUS_TONE: Record<OcppStepStatus, StatusTone> = {
-  waiting: "neutral",
-  running: "brand",
-  passed: "success",
-  failed: "error",
-};
 
 // DESIGN-HANDOFF.md §2.12: this screen itself sends nothing to the backend —
 // Next is what kicks off the final OCPP check (routed through /processing,
@@ -88,19 +80,7 @@ export function AutomatedOcppTestingPage() {
             <p className={formStyles.subheading}>{t("automatedOcppTesting.subheading")}</p>
           </div>
 
-          <div className={formStyles.list}>
-            {session.ocppSteps.map((step) => (
-              <div key={step.key} className={styles.stepRow} data-status={step.status}>
-                <span className={styles.iconSlot} aria-hidden="true">
-                  <span className={styles.pendingDot} />
-                </span>
-                <span className={styles.stepLabel}>{step.label}</span>
-                <StatusPill tone={STEP_STATUS_TONE[step.status]}>
-                  {t(`automatedOcppTesting.stepStatus.${step.status}`)}
-                </StatusPill>
-              </div>
-            ))}
-          </div>
+          <OcppStepList steps={session.ocppSteps} />
         </div>
       )}
     </AppShell>

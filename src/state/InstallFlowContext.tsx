@@ -22,7 +22,9 @@ import type { ApiSiteArea, ChargerStatusResponse } from "@/types/api";
 // Bump this whenever the session shape changes incompatibly. A mismatch (or
 // missing key) resets to a fresh session instead of attempting a migration —
 // simplest thing that works for a short-lived, single-device install flow.
-const SESSION_KEY = "dynachrg.installSession.v6";
+// v7: installerDraft.countryCode now holds an ISO 3166-1 country code (e.g.
+// "US") instead of a dial code (e.g. "+1") — see src/constants/countries.ts.
+const SESSION_KEY = "dynachrg.installSession.v7";
 
 export interface InstallSession {
   chargerId: string;

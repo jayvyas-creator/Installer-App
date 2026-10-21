@@ -5,6 +5,7 @@ import { Zap } from "lucide-react";
 import { AppShell } from "@/components/organisms/AppShell";
 import { PulsingBadge } from "@/components/atoms/PulsingBadge";
 import { Wordmark } from "@/components/atoms/Wordmark";
+import { OcppStepList } from "@/components/molecules/OcppStepList";
 import { useInstallFlow } from "@/state/InstallFlowContext";
 import { useCommissioningCheck } from "@/hooks/useCommissioningCheck";
 import { useOcppStepRunner } from "@/hooks/useOcppStepRunner";
@@ -39,7 +40,7 @@ export function ProcessingPage() {
   const hasSession = Boolean(session.chargerId && session.installerToken);
   const plan = derivePlan(session);
   const isOcppCheck = plan.installationStep === "OcppCheckComplete";
-  const { markFailedStep } = useOcppStepRunner({ active: isOcppCheck, setSteps: setOcppSteps });
+  const { applyResults, markFailedStep } = useOcppStepRunner({ active: isOcppCheck, setSteps: setOcppSteps });
 
   const { elapsedLabel, result } = useCommissioningCheck({
     run: () => {
@@ -51,6 +52,7 @@ export function ProcessingPage() {
         session.installerToken,
         plan.installationStep,
         session.siteAreas.length,
+        isOcppCheck ? applyResults : undefined,
       );
     },
   });
@@ -78,7 +80,12 @@ export function ProcessingPage() {
       // (DESIGN-HANDOFF.md §4, "no way out" while a check runs).
       navigate(result.data, { replace: true });
     } else {
-      if (isOcppCheck) markFailedStep(result.error);
+      // applyResults() already attributed the failure to the exact command
+      // when the backend reported per-command results; only fall back to a
+      // guess here for a failure with no such data (e.g. a network timeout).
+      if (isOcppCheck && !session.ocppSteps.some((step) => step.status === "failed")) {
+        markFailedStep(result.error);
+      }
       navigate(plan.failureRoute, { replace: true, state: { checkError: result.error } });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,6 +105,11 @@ export function ProcessingPage() {
           <p className={styles.label}>{t("processing.stayMessage")}</p>
           <p className={styles.sublabel}>{t("processing.elapsedLabel", { elapsed: elapsedLabel })}</p>
         </div>
+        {isOcppCheck && (
+          <div className={styles.ocppSteps}>
+            <OcppStepList steps={session.ocppSteps} />
+          </div>
+        )}
       </div>
     </AppShell>
   );

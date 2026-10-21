@@ -1,4 +1,5 @@
 import type { FailureMode } from "@/types";
+import { DEFAULT_OCPP_STEPS } from "@/constants/mockData";
 import type {
   ApiSiteArea,
   ChargerLookup,
@@ -6,6 +7,8 @@ import type {
   ChargerStatusResponse,
   InstallPayload,
   InstallationStep,
+  OcppCommandResult,
+  PostStatusResult,
   RegisterTokenPayload,
   RegisterTokenResult,
   Result,
@@ -161,7 +164,7 @@ export async function mockGetStatus(chargerId: string): Promise<Result<ChargerSt
 export async function mockPostStatus(
   chargerId: string,
   installationStep: string,
-): Promise<Result<void>> {
+): Promise<Result<PostStatusResult>> {
   await delay();
   const record = getOrCreateRecord(chargerId);
 
@@ -180,8 +183,31 @@ export async function mockPostStatus(
   if (installationStep === "OcppCheckComplete" && record.failureMode === "OCPPTIMEOUT") {
     return new Promise(() => {});
   }
-  if (installationStep === "OcppCheckComplete" && record.failureMode === "OCPPFAIL") {
-    return { ok: false, error: "We couldn't complete the OCPP test. Please check your network communication." };
+
+  if (installationStep === "OcppCheckComplete") {
+    // Unlike the other steps, the final OCPP check reports a result per
+    // command (getConfiguration/changeConfiguration/reset/changeAvailability)
+    // so the UI can attribute a failure to the exact command that failed
+    // instead of guessing from a shared timer. OCPPFAIL always fails "Reset
+    // (Hard)" specifically, with its own reason — commands after it never ran.
+    const failed = record.failureMode === "OCPPFAIL";
+    const ocppResults: OcppCommandResult[] = failed
+      ? [
+          { key: "getConfiguration", status: "passed" },
+          { key: "changeConfiguration", status: "passed" },
+          {
+            key: "reset",
+            status: "failed",
+            reason: "The charger did not acknowledge the Reset (Hard) command.",
+          },
+        ]
+      : DEFAULT_OCPP_STEPS.map((step) => ({ key: step.key, status: "passed" as const }));
+
+    if (!failed) {
+      record.status = "Connected";
+      record.installationStep = null;
+    }
+    return { ok: true, data: { ocppResults } };
   }
 
   record.installationStep = installationStep as InstallationStep;
@@ -189,11 +215,7 @@ export async function mockPostStatus(
   if (installationStep === "ChargerCommCheckComplete" || installationStep === "ChargerHWCheckComplete") {
     record.status = "Installed";
   }
-  if (installationStep === "OcppCheckComplete") {
-    record.status = "Connected";
-    record.installationStep = null;
-  }
-  return { ok: true, data: undefined };
+  return { ok: true, data: {} };
 }
 
 export async function mockPutTokenRegistration(

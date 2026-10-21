@@ -1,21 +1,27 @@
 import { useEffect, useRef } from "react";
 import { DEFAULT_OCPP_STEPS } from "@/constants/mockData";
 import type { OcppStep } from "@/types";
+import type { OcppCommandResult } from "@/types/api";
 
 interface UseOcppStepRunnerOptions {
   active: boolean;
   setSteps: (steps: OcppStep[]) => void;
-  stepDurationMs?: number;
+  revealDelayMs?: number;
 }
 
-// Animates the 4 real OCPP commands (CLAUDE.md §6) through
-// waiting -> running -> passed while ProcessingPage's actual commissioningFlow
-// request is in flight. The backend only reports pass/fail for the check as a
-// whole, not per-command, so this progression is a best-effort visual
-// simulation — markFailedStep() is what reconciles it with the real outcome
-// once the request resolves, marking the step that was running (or, if the
-// animation already finished, the last step) as the one that failed.
-export function useOcppStepRunner({ active, setSteps, stepDurationMs = 1200 }: UseOcppStepRunnerOptions) {
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+// Drives the 4 real OCPP commands (CLAUDE.md §6) through
+// waiting -> running -> passed/failed for ProcessingPage's actual
+// commissioningFlow request. Each command's final status comes from the
+// backend's own per-command result (applyResults), revealed one at a time
+// for a live feel — not from a fixed timer guessing at progress. A command
+// after the one that failed never runs, so it's left at "waiting".
+// markFailedStep() stays as a fallback for failures that carry no
+// per-command data at all (a network timeout, a generic step-update error).
+export function useOcppStepRunner({ active, setSteps, revealDelayMs = 600 }: UseOcppStepRunnerOptions) {
   const stepsRef = useRef<OcppStep[]>(DEFAULT_OCPP_STEPS);
   const setStepsRef = useRef(setSteps);
   useEffect(() => {
@@ -30,32 +36,23 @@ export function useOcppStepRunner({ active, setSteps, stepDurationMs = 1200 }: U
   useEffect(() => {
     if (!active) return;
     apply(DEFAULT_OCPP_STEPS.map((step) => ({ ...step, status: "waiting", reason: undefined })));
+  }, [active]);
 
-    let cancelled = false;
-    let index = 0;
+  async function applyResults(results: OcppCommandResult[]) {
+    for (const step of DEFAULT_OCPP_STEPS) {
+      const result = results.find((candidate) => candidate.key === step.key);
+      if (!result) break; // never attempted: an earlier command already failed
 
-    function advance() {
-      if (cancelled || index >= DEFAULT_OCPP_STEPS.length) return;
+      apply(stepsRef.current.map((s) => (s.key === step.key ? { ...s, status: "running" } : s)));
+      await wait(revealDelayMs);
       apply(
-        DEFAULT_OCPP_STEPS.map((step, i) => ({
-          ...step,
-          status: i < index ? "passed" : i === index ? "running" : "waiting",
-        })),
+        stepsRef.current.map((s) =>
+          s.key === step.key ? { ...s, status: result.status, reason: result.reason } : s,
+        ),
       );
-      window.setTimeout(() => {
-        if (cancelled) return;
-        index += 1;
-        apply(DEFAULT_OCPP_STEPS.map((step, i) => ({ ...step, status: i < index ? "passed" : "waiting" })));
-        advance();
-      }, stepDurationMs);
+      if (result.status === "failed") break;
     }
-
-    advance();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active, stepDurationMs]);
+  }
 
   function markFailedStep(reason: string) {
     const current = stepsRef.current;
@@ -71,5 +68,5 @@ export function useOcppStepRunner({ active, setSteps, stepDurationMs = 1200 }: U
     );
   }
 
-  return { markFailedStep };
+  return { applyResults, markFailedStep };
 }

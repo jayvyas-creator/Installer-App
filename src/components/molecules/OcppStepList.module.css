@@ -1,0 +1,61 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.stepRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--duration-base) var(--ease-standard),
+    background var(--duration-base) var(--ease-standard);
+}
+
+.stepRow[data-status="running"] {
+  border-color: var(--color-brand-orange-500);
+  background: var(--surface-brand-subtle);
+}
+
+.stepRow[data-status="passed"] {
+  border-color: var(--border-success);
+  background: var(--surface-success-subtle);
+}
+
+.stepRow[data-status="failed"] {
+  border-color: var(--border-error);
+  background: var(--surface-error-subtle);
+}
+
+.iconSlot {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pendingDot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-strong);
+}
+
+.stepLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stepRow[data-status="waiting"] .stepLabel {
+  color: var(--text-secondary);
+}

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/atoms/Input";
 import { SelectField } from "@/components/molecules/SelectField";
-import { COUNTRY_DIAL_CODES } from "@/constants/countries";
+import { COUNTRY_OPTIONS } from "@/constants/countries";
 import { defineControls } from "tempo-sdk/assets";
 import styles from "./PhoneNumberField.module.css";
 
@@ -29,8 +29,12 @@ export function PhoneNumberField({
   required,
 }: PhoneNumberFieldProps) {
   const { t } = useTranslation();
-  const countryCodeOptions = COUNTRY_DIAL_CODES.map((country) => ({
-    value: country.dialCode,
+  // Value is the ISO country code (unique per option), not the dial code —
+  // many countries share a dial code (+1 covers the US, Canada, Jamaica, ...)
+  // so the dial code alone can't identify a selection. See
+  // src/constants/countries.ts for why.
+  const countryCodeOptions = COUNTRY_OPTIONS.map((country) => ({
+    value: country.iso,
     label: t("phoneNumberField.countryOption", { dialCode: country.dialCode, name: country.name }),
   }));
   return (

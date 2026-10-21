@@ -8,7 +8,7 @@ describe("PhoneNumberField", () => {
   it("renders the country code select and the phone number input", () => {
     render(
       <PhoneNumberField
-        countryCode="+1"
+        countryCode="US"
         phoneNumber=""
         onCountryCodeChange={() => {}}
         onPhoneNumberChange={() => {}}
@@ -23,14 +23,14 @@ describe("PhoneNumberField", () => {
     const onCountryCodeChange = vi.fn();
     render(
       <PhoneNumberField
-        countryCode="+1"
+        countryCode="US"
         phoneNumber=""
         onCountryCodeChange={onCountryCodeChange}
         onPhoneNumberChange={() => {}}
       />,
     );
-    await user.selectOptions(screen.getByLabelText("Code"), "+44");
-    expect(onCountryCodeChange).toHaveBeenCalledWith("+44");
+    await user.selectOptions(screen.getByLabelText("Code"), "GB");
+    expect(onCountryCodeChange).toHaveBeenCalledWith("GB");
   });
 
   it("calls onPhoneNumberChange as the user types", async () => {
@@ -38,7 +38,7 @@ describe("PhoneNumberField", () => {
     const onPhoneNumberChange = vi.fn();
     render(
       <PhoneNumberField
-        countryCode="+1"
+        countryCode="US"
         phoneNumber=""
         onCountryCodeChange={() => {}}
         onPhoneNumberChange={onPhoneNumberChange}
@@ -51,7 +51,7 @@ describe("PhoneNumberField", () => {
   it("surfaces an error on the phone number field", () => {
     render(
       <PhoneNumberField
-        countryCode="+1"
+        countryCode="US"
         phoneNumber=""
         onCountryCodeChange={() => {}}
         onPhoneNumberChange={() => {}}
@@ -64,7 +64,7 @@ describe("PhoneNumberField", () => {
   it("has no accessibility violations", async () => {
     const { container } = render(
       <PhoneNumberField
-        countryCode="+1"
+        countryCode="US"
         phoneNumber="5551234567"
         onCountryCodeChange={() => {}}
         onPhoneNumberChange={() => {}}
