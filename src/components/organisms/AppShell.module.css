@@ -104,3 +104,11 @@
 [data-sonner-toast][data-styled="true"].toast {
   box-shadow: var(--shadow-lg);
 }
+
+/* Sonner's default top-position exit animation slides the toast up by its own
+   height before fading, which carries it back through the sticky header and
+   over the page title. Fade in place instead — keep the library's opacity
+   transition, just drop the translateY it pairs it with. */
+[data-sonner-toast][data-removed="true"][data-front="true"][data-swipe-out="false"].toast {
+  --y: translateY(0);
+}

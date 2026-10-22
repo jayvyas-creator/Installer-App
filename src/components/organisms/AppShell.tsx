@@ -99,6 +99,7 @@ export function AppShell({
       <Toaster
         position="top-center"
         offset={{ top: "calc(3.5rem + var(--space-3))" }}
+        mobileOffset={{ top: "calc(3.5rem + var(--space-3))" }}
         className={styles.toaster}
         toastOptions={{ classNames: { toast: styles.toast } }}
       />

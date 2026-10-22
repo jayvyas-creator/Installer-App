@@ -249,7 +249,7 @@
     "elapsedLabel": "Elapsed: {{elapsed}}"
   },
   "readyToBeCommissioned": {
-    "toastMessage": "{{chargerId}} commissioning complete. Charger is now live.",
+    "toastMessage": "{{chargerId}}: installation steps completed.",
     "title": "Ready to be commissioned",
     "description": "All tasks are successfully completed",
     "backToHome": "Back to Home",

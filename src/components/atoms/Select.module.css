@@ -4,6 +4,7 @@
 
 .select {
   width: 100%;
+  min-width: 0;
   appearance: none;
   background: transparent;
   border: none;
@@ -11,6 +12,9 @@
   font-weight: 500;
   color: var(--text-primary);
   padding-right: var(--space-6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .select:disabled {
